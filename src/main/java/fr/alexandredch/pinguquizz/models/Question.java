@@ -1,6 +1,7 @@
 package fr.alexandredch.pinguquizz.models;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -9,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -17,6 +19,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class Question {
 
     @Id
@@ -27,14 +30,22 @@ public class Question {
 
     private String image;
     private String question;
-    private String answerKey;
+    private Difficulty difficulty;
+    private int points;
+    private int time;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     private List<Answer> answers;
 
     public enum Type {
         MULTIPLE_CHOICE,
         TRUE_FALSE,
         OPEN
+    }
+
+    public enum Difficulty {
+        EASY,
+        MEDIUM,
+        HARD
     }
 }
