@@ -145,6 +145,7 @@
 import {ref} from "vue";
 import {useRouter} from "vue-router";
 import Question from "@/components/Question.vue";
+import {post, postFormData} from "@/api/api.js";
 
 export default {
   components: {Question},
@@ -153,7 +154,7 @@ export default {
     const quiz = ref({
       name: "",
       description: "",
-      image: "",
+      image: null,
       questions: [],
     });
 
@@ -188,11 +189,11 @@ export default {
       quiz.value.questions.push({
         question: "",
         type: "MULTIPLE_CHOICE",
-        image: "",
+        image: null,
         points: 1,
         difficulty: "EASY",
         time: 30,
-        answers: [{answer: "", correct: false, image: ""}],
+        answers: [{answer: "", correct: false, image: null}],
       });
       selectedQuestion.value = newIndex;
     };
@@ -201,33 +202,70 @@ export default {
       quiz.value.questions[questionIndex].answers.push({
         answer: "",
         correct: false,
-        image: "",
+        image: null,
       });
     };
 
     const uploadQuizImage = (event) => {
       const file = event.target.files[0];
-      if (file) quiz.value.image = URL.createObjectURL(file);
+      if (file) quiz.value.image = file;
     };
 
     const uploadQuestionImage = (event, index) => {
       const file = event.target.files[0];
-      if (file) quiz.value.questions[index].image = URL.createObjectURL(file);
+      if (file) quiz.value.questions[index].image = file;
     };
 
     const uploadAnswerImage = (event, questionIndex, answerIndex) => {
       const file = event.target.files[0];
-      if (file) quiz.value.questions[questionIndex].answers[answerIndex].image = URL.createObjectURL(file);
+      if (file) quiz.value.questions[questionIndex].answers[answerIndex].image = file;
     };
 
     const submitQuiz = async () => {
       try {
-        const response = await fetch("/api/quizzes", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify(quiz.value),
+        const formData = new FormData();
+        formData.append("name", quiz.value.name);
+        formData.append("description", quiz.value.description);
+        if (quiz.value.image) {
+          formData.append("image", quiz.value.image);
+        }
+
+        console.log("hey")
+        quiz.value.questions.forEach((question) => {
+          console.log(question)
+          // append all images to a specific form data key
+          if (question.image) {
+            formData.append(`question_images`, question.image);
+          }
+
+          const question_data = {
+            question: question.question,
+            type: question.type,
+            points: question.points,
+            difficulty: question.difficulty,
+            time: question.time,
+            answers: question.answers.map((answer) => ({
+              answer: answer.answer,
+              correct: answer.correct,
+            })),
+          };
+          formData.append(`questions`, JSON.stringify(question_data));
+          console.log(JSON.stringify(question_data))
+
+          question.answers.forEach((answer) => {
+            if (answer.image) {
+              formData.append(`answer_images`, answer.image);
+            }
+          });
         });
-        if (response.ok) await router.push("/admin/quizzes");
+
+        const response = await postFormData("/quizz/create", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        if (response.ok) await router.push("/admin");
       } catch (error) {
         console.error("Failed to create quiz:", error);
       }

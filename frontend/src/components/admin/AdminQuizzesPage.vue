@@ -20,7 +20,8 @@
         <thead class="bg-gray-50">
         <tr>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description
+          </th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
         </tr>
@@ -72,8 +73,9 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import {computed, onMounted, ref} from "vue";
+import {useRouter} from "vue-router";
+import {fetcher} from "@/api/api.js";
 
 export default {
   setup() {
@@ -84,8 +86,7 @@ export default {
     // Fetch quizzes from the backend
     const fetchQuizzes = async () => {
       try {
-        const response = await fetch("/api/quizzes");
-        quizzes.value = await response.json();
+        quizzes.value = await fetcher("/quizz/all");
       } catch (error) {
         console.error("Failed to fetch quizzes:", error);
       }
@@ -107,7 +108,7 @@ export default {
     const deleteQuiz = async (quizId) => {
       if (confirm("Êtes-vous sûr de vouloir supprimer ce quizz ?")) {
         try {
-          await fetch(`/api/quizzes/${quizId}`, { method: "DELETE" });
+          await fetch(`/api/quizzes/${quizId}`, {method: "DELETE"});
           await fetchQuizzes(); // Refresh the list
         } catch (error) {
           console.error("Failed to delete quiz:", error);
