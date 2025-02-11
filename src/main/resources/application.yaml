@@ -12,13 +12,12 @@ spring:
       hibernate:
         # Because keywords like "user" are reserved in H2
         globally_quoted_identifiers: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 100MB
 
 
 server:
   servlet:
     context-path: /api
-
-logging.level:
-  org.springframework.security.web.csrf.CsrfFilter: debug
-
-  org.springframework.security: debug

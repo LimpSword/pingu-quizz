@@ -3,9 +3,13 @@ package fr.alexandredch.pinguquizz.controllers.admin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.alexandredch.pinguquizz.models.Question;
 import fr.alexandredch.pinguquizz.models.Quizz;
+import fr.alexandredch.pinguquizz.models.User;
 import fr.alexandredch.pinguquizz.repositories.QuizzRepository;
+import fr.alexandredch.pinguquizz.service.storage.StorageService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,9 +26,11 @@ import java.util.List;
 public class ManageQuizzController {
 
     private final QuizzRepository quizzRepository;
+    private final StorageService storageService;
 
-    public ManageQuizzController(QuizzRepository quizzRepository) {
+    public ManageQuizzController(QuizzRepository quizzRepository, StorageService storageService) {
         this.quizzRepository = quizzRepository;
+        this.storageService = storageService;
     }
 
     @GetMapping("/all")
@@ -50,23 +56,24 @@ public class ManageQuizzController {
             @RequestParam(value = "question_images", required = false) List<MultipartFile> questionImages,
             @RequestParam(value = "answer_images", required = false) List<MultipartFile> answerImages,
             @RequestParam(value = "questions", required = false) String questionsJson) {
-        System.out.println("Received quiz creation request");
-        System.out.println("Name: " + name);
-        System.out.println("Description: " + description);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+
+        Quizz quizz = new Quizz();
+        quizz.setAuthor(user);
+        quizz.setName(name);
+        quizz.setDescription(description);
 
         if (image != null && !image.isEmpty()) {
-            System.out.println("Image received: " + image.getOriginalFilename());
-
-            // Save the image
+            String imageName = storageService.store(image);
+            quizz.setImage(imageName);
+            quizz.setOriginalImageName(image.getOriginalFilename());
         }
 
         List<Question> questions = parseQuestionsJson(questionsJson);
-        System.out.println(questions);
-
-        Quizz quizz = new Quizz();
-        quizz.setName(name);
-        quizz.setDescription(description);
         quizz.setQuestions(questions);
+
+        quizzRepository.save(quizz);
 
         return ResponseEntity.ok("Quiz created successfully");
     }

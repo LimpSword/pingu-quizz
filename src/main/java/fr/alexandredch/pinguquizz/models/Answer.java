@@ -25,4 +25,5 @@ public class Answer {
     private boolean correct;
     private String answer;
     private String image;
+    private String originalImageName;
 }

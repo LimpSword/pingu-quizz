@@ -1,5 +1,6 @@
 package fr.alexandredch.pinguquizz.models;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -29,12 +30,13 @@ public class Question {
     private Type type;
 
     private String image;
+    private String originalImageName;
     private String question;
     private Difficulty difficulty;
     private int points;
     private int time;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Answer> answers;
 
     public enum Type {
