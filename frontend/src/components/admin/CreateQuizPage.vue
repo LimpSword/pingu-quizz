@@ -1,8 +1,15 @@
 <template>
   <div class="p-8 bg-gray-100 min-h-screen flex gap-8">
     <!-- Form Section -->
-    <div class="flex-1 pr-4">
-      <h1 class="text-3xl font-bold text-gray-800 mb-8">Créer un nouveau quizz</h1>
+    <div class="flex-1 m-4">
+      <!-- Back Button -->
+      <div class="flex mb-4">
+        <!-- center the button vertically -->
+        <button @click="router().push('/admin')" class="text-blue-600 hover:text-blue-900">
+          < Retour
+        </button>
+        <h1 class="ml-5 text-3xl font-bold text-gray-800 ">Créer un nouveau quizz</h1>
+      </div>
 
       <form @submit.prevent="submitQuiz" class="bg-white p-6 rounded-lg shadow">
         <!-- Quiz Name -->
@@ -129,7 +136,7 @@
 
     <!-- Quiz Preview - Fixed on right side -->
     <div class="w-1/3 sticky top-8 self-start bg-white p-6 rounded-lg shadow">
-      <h2 class="text-xl font-semibold text-gray-800 mb-4">Aperçu</h2>
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Aperçu d'une question</h2>
       <div v-if="selectedQuestion !== null" class="space-y-4">
         <h3 class="text-lg font-bold">Question {{ selectedQuestion + 1 }}</h3>
         <Question :question="quiz.questions[selectedQuestion]"/>
@@ -145,9 +152,15 @@
 import {ref} from "vue";
 import {useRouter} from "vue-router";
 import Question from "@/components/Question.vue";
-import {post, postFormData} from "@/api/api.js";
+import {postFormData} from "@/api/api.js";
+import router from "@/router/index.js";
 
 export default {
+  methods: {
+    router() {
+      return router
+    }
+  },
   components: {Question},
   setup() {
     const router = useRouter();

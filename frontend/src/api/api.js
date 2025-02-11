@@ -21,11 +21,6 @@ export const fetcher = async (url, options = {}) => {
   return response.json();
 }
 
-export const post = (url, data) => fetcher(url, {
-  method: 'POST',
-  body: JSON.stringify(data),
-});
-
 export const postFormData = (url, data) => fetcher(url, {
   method: 'POST',
   body: data,

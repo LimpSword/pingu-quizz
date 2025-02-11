@@ -35,7 +35,6 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore();
   if (to.meta.requiresAdmin && !auth.isAdmin) {
-    console.log("??")
     next({path: '/'});
   } else {
     next();
