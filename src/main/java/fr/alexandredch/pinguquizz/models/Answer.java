@@ -26,4 +26,12 @@ public class Answer {
     private String answer;
     private String image;
     private String originalImageName;
+
+    public static Answer minimal(Answer answer) {
+        Answer minimal = new Answer();
+        minimal.setCorrect(false);
+        minimal.setAnswer(answer.getAnswer());
+        minimal.setImage(answer.getImage());
+        return minimal;
+    }
 }

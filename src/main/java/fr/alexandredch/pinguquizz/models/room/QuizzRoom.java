@@ -102,7 +102,7 @@ public class QuizzRoom {
             return;
         }
 
-        Question question = quizz.getQuestions().get(currentQuestion);
+        Question question = Question.minimal(quizz.getQuestions().get(currentQuestion));
 
         players.forEach(player -> {
             try {
@@ -114,11 +114,9 @@ public class QuizzRoom {
     }
 
     public void sendAnswer() {
-        Question question = quizz.getQuestions().get(currentQuestion);
-
         players.forEach(player -> {
             try {
-                player.getSession().sendMessage(new TextMessage(WebApplication.OBJECT_MAPPER.writeValueAsString(Map.of("type", "ANSWER", "question", question))));
+                player.getSession().sendMessage(new TextMessage(WebApplication.OBJECT_MAPPER.writeValueAsString(Map.of("type", "RESULT", "correct", player.getAnswers().get(currentQuestion)))));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -126,8 +124,9 @@ public class QuizzRoom {
     }
 
     public void endQuestion() {
-        currentQuestion++;
         sendAnswer();
+
+        currentQuestion++;
 
         new Timer().schedule(currentTask = new java.util.TimerTask() {
             @Override

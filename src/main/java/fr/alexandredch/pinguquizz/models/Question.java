@@ -39,6 +39,18 @@ public class Question {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Answer> answers;
 
+    public static Question minimal(Question question) {
+        Question minimal = new Question();
+        minimal.setType(question.getType());
+        minimal.setImage(question.getImage());
+        minimal.setQuestion(question.getQuestion());
+        minimal.setDifficulty(question.getDifficulty());
+        minimal.setPoints(question.getPoints());
+        minimal.setTime(question.getTime());
+        minimal.setAnswers(question.getAnswers().stream().map(Answer::minimal).toList());
+        return minimal;
+    }
+
     public List<Answer> getCorrectAnswers() {
         return answers.stream().filter(Answer::isCorrect).toList();
     }

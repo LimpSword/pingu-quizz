@@ -46,10 +46,6 @@
     <div v-else class="text-center">
       <h2 class="text-4xl font-bold text-white mb-4">Quiz Terminé!</h2>
       <p class="text-xl text-white mb-6">Votre score: {{ score }}</p>
-      <button @click="restartQuiz"
-              class="bg-white text-blue-600 py-2 px-4 rounded-md hover:bg-blue-100">
-        Rejouer
-      </button>
     </div>
   </div>
 </template>
@@ -77,7 +73,6 @@ export default {
           startTimer();
         } else if (data.type === "RESULT") {
           if (data.correct) score.value++;
-          getNextQuestion();
         }
       };
     };
@@ -87,8 +82,6 @@ export default {
       interval = setInterval(() => {
         if (timer.value > 0) {
           timer.value--;
-        } else {
-          getNextQuestion();
         }
       }, 1000);
     };
@@ -99,24 +92,13 @@ export default {
       }
     };
 
-    const getNextQuestion = () => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({type: "NEXT_QUESTION"}));
-      }
-    };
-
-    const restartQuiz = () => {
-      score.value = 0;
-      getNextQuestion();
-    };
-
     onMounted(setupWebSocket);
     onUnmounted(() => {
       clearInterval(interval);
       ws.close();
     });
 
-    return {currentQuestion, timer, score, openAnswer, submitAnswer, restartQuiz};
+    return {currentQuestion, timer, score, openAnswer, submitAnswer};
   },
 };
 </script>
