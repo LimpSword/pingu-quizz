@@ -2,7 +2,7 @@ package fr.alexandredch.pinguquizz.repositories;
 
 import fr.alexandredch.pinguquizz.models.QuizzRoom;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,11 +14,8 @@ public class RoomRepository {
     private static final String CODE_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int MAX_TRIES = 10;
 
-    private final EntityManager entityManager;
-
-    public RoomRepository(EntityManagerFactory entityManagerFactory) {
-        this.entityManager = entityManagerFactory.createEntityManager();
-    }
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public Optional<String> generateUniqueCode() {
         // Code is a combination of 6 uppercase letters or digits
