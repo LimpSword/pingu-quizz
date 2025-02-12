@@ -45,7 +45,9 @@
                 }"
                 class="px-2 py-1 rounded-full text-xs font-medium"
               >
-                {{ room.started && !room.paused ? "En cours" : room.started ? "En pause" : "Non démarré" }}
+                {{
+                  room.started && !room.paused ? "En cours" : room.started ? "En pause" : "Non démarré"
+                }}
               </span>
             </td>
             <td class="px-6 py-4 text-sm text-gray-700">
@@ -149,7 +151,7 @@ export default {
     // Fetch quizzes
     const fetchQuizzes = async () => {
       try {
-        quizzes.value = await fetcher("/quizz/all");
+        quizzes.value = await (await fetcher("/quizz/all")).json();
       } catch (error) {
         console.error("Failed to fetch quizzes:", error);
       }
@@ -158,7 +160,7 @@ export default {
     // Fetch active rooms
     const fetchRooms = async () => {
       try {
-        rooms.value = await fetcher("/room/all");
+        rooms.value = await (await fetcher("/room/all")).json();
         console.log(rooms.value);
       } catch (error) {
         console.error("Failed to fetch rooms:", error);
