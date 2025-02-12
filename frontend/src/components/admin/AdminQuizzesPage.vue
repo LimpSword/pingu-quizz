@@ -35,7 +35,14 @@
           <tbody class="divide-y divide-gray-200">
           <tr v-for="room in activeRooms" :key="room.id">
             <td class="px-6 py-4 text-sm text-gray-900">{{ room.name }}</td>
-            <td class="px-6 py-4 text-sm text-gray-700">{{ room.code }}</td>
+            <td class="px-6 py-4 text-sm text-gray-700">{{ room.code }}
+              <button
+                class="copy-btn transition-all duration-200 hover:bg-gray-200 active:bg-gray-300 p-1 rounded"
+                @click="copyRoomCode(room.code)"
+              >
+                <img src="/copy-svgrepo-com.svg" alt="Copy Icon" class="w-4 h-4 inline-block" />
+              </button>
+            </td>
             <td class="px-6 py-4 text-sm text-gray-700">
               <span
                 :class="{
@@ -148,6 +155,10 @@ export default {
     const newRoomName = ref("");
     const showActiveOnly = ref(false);
 
+    const copyRoomCode = (code) => {
+      navigator.clipboard.writeText(code);
+    };
+
     // Fetch quizzes
     const fetchQuizzes = async () => {
       try {
@@ -203,6 +214,7 @@ export default {
       rooms,
       newRoomName,
       activeRooms,
+      copyRoomCode,
       editQuiz: (id) => router.push(`/admin/quizzes/edit/${id}`),
       deleteQuiz: async (id) => {
         if (confirm("Êtes-vous sûr de vouloir supprimer ce quizz ?")) {

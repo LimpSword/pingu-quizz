@@ -5,6 +5,7 @@ import HomeView from "@/views/HomeView.vue";
 import AdminQuizzesPage from "@/components/admin/AdminQuizzesPage.vue";
 import CreateQuizPage from "@/components/admin/CreateQuizPage.vue";
 import PlayQuizzPage from "@/components/play/PlayQuizzPage.vue";
+import AdminRoomPage from "@/components/admin/AdminRoomPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,6 +17,7 @@ const router = createRouter({
     {
       path: "/play/:id",
       name: "play",
+      props: true,
       component: PlayQuizzPage
     },
     {
@@ -33,6 +35,13 @@ const router = createRouter({
       path: "/admin/quizz/create",
       name: "create-quizz",
       component: CreateQuizPage,
+      meta: {requiresAdmin: true},
+    },
+    {
+      path: "/admin/room/:code",
+      name: "admin-room",
+      component: AdminRoomPage,
+      props: true,
       meta: {requiresAdmin: true},
     }
   ],
