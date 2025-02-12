@@ -50,7 +50,7 @@
                     </span>
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-700">
-                  <router-link :to="'/admin/room/' + room.id">
+                  <router-link :to="'/admin/room/' + room.code">
                     <button class="text-blue-600 hover:text-blue-900">Gérer</button>
                   </router-link>
                 </td>
@@ -77,7 +77,7 @@
               </div>
 
 
-              <router-link :to="'/admin/room/' + room.id"
+              <router-link :to="'/admin/room/' + room.code"
                            class="block mt-2 text-blue-600 hover:text-blue-900">Gérer
               </router-link>
             </div>

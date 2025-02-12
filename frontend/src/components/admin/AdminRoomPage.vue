@@ -129,7 +129,7 @@ export default {
 
     // Fetch initial data
     const fetchRoomData = async () => {
-      const response = await get('/room/current/' + roomCode.value);
+      const response = await fetcher('/room/current/' + roomCode.value);
       if (response.ok) {
         const data = await response.json();
         currentQuiz.value = data.quizz;
@@ -137,6 +137,9 @@ export default {
         isPaused.value = data.paused;
         isStarted.value = data.started;
         responsePercentage.value = data.responsePercentage;
+      } else {
+        // Go back to admin page if room is not found
+        await router.push('/admin');
       }
     };
 

@@ -6,19 +6,13 @@ export const fetcher = async (url, options = {}) => {
   const authStore = useAuthStore();
   const token = authStore.token;
 
-  const response = await fetch(`${apiUrl}${url}`, {
+  return await fetch(`${apiUrl}${url}`, {
     ...options,
     headers: {
       ...options.headers,
       'Authorization': `Bearer ${token}`,
     },
   });
-
-  if (!response.ok) {
-    throw new Error(response.statusText);
-  }
-
-  return response;
 }
 
 export const postFormData = (url, data) => fetcher(url, {
