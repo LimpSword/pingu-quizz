@@ -1,5 +1,66 @@
 <template>
   <div class="p-8 bg-gray-100 min-h-screen">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">Gestion des Salles</h1>
+
+    <!-- Room Management Section -->
+    <div class="mb-12 bg-white p-6 rounded-lg shadow">
+      <div class="mb-4">
+        <h3 class="text-xl font-medium text-gray-700">Créer une nouvelle salle</h3>
+        <input
+          v-model="newRoomName"
+          type="text"
+          placeholder="Nom de la salle"
+          class="border border-gray-300 rounded px-3 py-2 mr-2"
+        />
+        <button
+          @click="createRoom"
+          class="mt-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-all duration-200"
+        >
+          Créer une salle
+        </button>
+      </div>
+
+      <h3 class="text-xl font-medium text-gray-700 mt-6">Salles actives</h3>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full">
+          <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gérer</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+          <tr v-for="room in activeRooms" :key="room.id">
+            <td class="px-6 py-4 text-sm text-gray-900">{{ room.name }}</td>
+            <td class="px-6 py-4 text-sm text-gray-700">{{ room.code }}</td>
+            <td class="px-6 py-4 text-sm text-gray-700">
+              <span
+                :class="{
+                  'bg-green-100 text-green-800': room.started && !room.paused,
+                  'bg-red-100 text-red-800': !room.started,
+                  'bg-yellow-100 text-yellow-800': room.started && room.paused,
+                }"
+                class="px-2 py-1 rounded-full text-xs font-medium"
+              >
+                {{ room.started && !room.paused ? "En cours" : room.started ? "En pause" : "Non démarré" }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-700">
+              <button
+                class="text-blue-600 hover:text-blue-900 mr-4"
+              >
+                Gérer
+              </button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <h1 class="text-3xl font-bold text-gray-800 mb-8">Gestion des Quizz</h1>
 
     <!-- Filter for Active Quizzes -->
@@ -20,7 +81,8 @@
         <thead class="bg-gray-50">
         <tr>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description
+          </th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
         </tr>
@@ -68,40 +130,13 @@
         Créer un nouveau quizz
       </router-link>
     </div>
-
-    <!-- Room Management Section -->
-    <div class="mt-12 bg-white p-6 rounded-lg shadow">
-      <h2 class="text-2xl font-semibold text-gray-800 mb-4">Gestion des Salles</h2>
-
-      <div class="mb-4">
-        <input
-          v-model="newRoomName"
-          type="text"
-          placeholder="Nom de la salle"
-          class="border border-gray-300 rounded px-3 py-2 w-full"
-        />
-        <button
-          @click="createRoom"
-          class="mt-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-all duration-200"
-        >
-          Créer une salle
-        </button>
-      </div>
-
-      <h3 class="text-xl font-medium text-gray-700 mt-6">Salles actives</h3>
-      <ul class="mt-2">
-        <li v-for="room in activeRooms" :key="room.id" class="py-2 border-b border-gray-200">
-          {{ room.name }} {{ room.code}}
-        </li>
-      </ul>
-    </div>
   </div>
 </template>
 
 <script>
-import { computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-import { fetcher } from "@/api/api.js";
+import {computed, onMounted, ref} from "vue";
+import {useRouter} from "vue-router";
+import {fetcher} from "@/api/api.js";
 
 export default {
   setup() {
@@ -124,6 +159,7 @@ export default {
     const fetchRooms = async () => {
       try {
         rooms.value = await fetcher("/room/all");
+        console.log(rooms.value);
       } catch (error) {
         console.error("Failed to fetch rooms:", error);
       }
@@ -135,8 +171,8 @@ export default {
       try {
         await fetcher("/room/create", {
           method: "POST",
-          body: JSON.stringify({ name: newRoomName.value }),
-          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({name: newRoomName.value}),
+          headers: {"Content-Type": "application/json"},
         });
         newRoomName.value = "";
         fetchRooms(); // Refresh room list
@@ -169,7 +205,7 @@ export default {
       deleteQuiz: async (id) => {
         if (confirm("Êtes-vous sûr de vouloir supprimer ce quizz ?")) {
           try {
-            await fetch(`/api/quizzes/${id}`, { method: "DELETE" });
+            await fetch(`/api/quizzes/${id}`, {method: "DELETE"});
             await fetchQuizzes();
           } catch (error) {
             console.error("Failed to delete quiz:", error);
