@@ -4,7 +4,6 @@
     <div class="flex-1 m-4">
       <!-- Back Button -->
       <div class="flex mb-4">
-        <!-- center the button vertically -->
         <button @click="router().push('/admin')" class="text-blue-600 hover:text-blue-900">
           < Retour
         </button>

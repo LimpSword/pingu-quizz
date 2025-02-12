@@ -1,6 +1,11 @@
 <template>
   <div class="p-8 bg-gray-100 min-h-screen">
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">Gestion de la salle de quizz</h1>
+    <div class="flex mb-4">
+      <button @click="router().push('/admin')" class="text-blue-600 hover:text-blue-900">
+        < Retour
+      </button>
+      <h1 class="ml-5 text-3xl font-bold text-gray-800 ">Gestion de la salle de Quizz</h1>
+    </div>
 
     <!-- Current Quiz Section -->
     <div class="bg-white p-6 rounded-lg shadow mb-8">
@@ -21,7 +26,7 @@
           class="copy-btn transition-all duration-200 hover:bg-gray-200 active:bg-gray-300 p-1 rounded"
           @click="copyRoomCode()"
         >
-          <img src="/copy-svgrepo-com.svg" alt="Copy Icon" class="w-4 h-4 inline-block" />
+          <img src="/copy-svgrepo-com.svg" alt="Copy Icon" class="w-4 h-4 inline-block"/>
         </button>
       </div>
     </div>
@@ -96,10 +101,16 @@
 import {ref, onMounted, watch} from 'vue';
 import {Chart, registerables} from 'chart.js';
 import {fetcher} from "@/api/api.js";
+import router from "@/router/index.js";
 
 Chart.register(...registerables);
 
 export default {
+  methods: {
+    router() {
+      return router
+    }
+  },
   props: {
     code: String,
   },
@@ -174,7 +185,11 @@ export default {
     const changeQuiz = async () => {
       const response = await fetcher('/room/edit', {
         method: 'POST',
-        body: JSON.stringify({code: roomCode.value, body: selectedQuizId.value, action: "CHANGE_QUIZZ"}),
+        body: JSON.stringify({
+          code: roomCode.value,
+          body: selectedQuizId.value,
+          action: "CHANGE_QUIZZ"
+        }),
         headers: {'Content-Type': 'application/json'},
       });
 

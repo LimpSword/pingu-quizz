@@ -58,11 +58,13 @@
               </span>
             </td>
             <td class="px-6 py-4 text-sm text-gray-700">
-              <button
-                class="text-blue-600 hover:text-blue-900 mr-4"
-              >
-                Gérer
-              </button>
+              <router-link :to="'/admin/room/' + room.id">
+                <button
+                  class="text-blue-600 hover:text-blue-900 mr-4"
+                >
+                  Gérer
+                </button>
+              </router-link>
             </td>
           </tr>
           </tbody>
