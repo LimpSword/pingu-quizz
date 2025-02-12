@@ -1,6 +1,6 @@
 package fr.alexandredch.pinguquizz.controllers;
 
-import fr.alexandredch.pinguquizz.models.QuizzRoom;
+import fr.alexandredch.pinguquizz.models.room.QuizzRoom;
 import fr.alexandredch.pinguquizz.repositories.RoomRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

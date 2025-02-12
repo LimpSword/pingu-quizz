@@ -1,6 +1,6 @@
 package fr.alexandredch.pinguquizz.controllers;
 
-import fr.alexandredch.pinguquizz.models.QuizzRoom;
+import fr.alexandredch.pinguquizz.models.room.QuizzRoom;
 import fr.alexandredch.pinguquizz.repositories.RoomRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,5 +29,14 @@ public class RoomController {
             return ResponseEntity.status(204).build();
         }
         return ResponseEntity.ok(Map.of("code", room.get().getCode()));
+    }
+
+    @GetMapping("/current/{code}")
+    public ResponseEntity<?> currentRoom(@PathVariable String code) {
+        Optional<QuizzRoom> room = roomRepository.findByCode(code);
+        if (room.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(room.get());
     }
 }

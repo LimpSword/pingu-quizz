@@ -1,6 +1,6 @@
 package fr.alexandredch.pinguquizz.repositories;
 
-import fr.alexandredch.pinguquizz.models.QuizzRoom;
+import fr.alexandredch.pinguquizz.models.room.QuizzRoom;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
