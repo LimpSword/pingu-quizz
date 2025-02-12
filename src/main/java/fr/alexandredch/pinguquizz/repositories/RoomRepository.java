@@ -1,23 +1,18 @@
 package fr.alexandredch.pinguquizz.repositories;
 
 import fr.alexandredch.pinguquizz.models.room.QuizzRoom;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class RoomRepository {
+public interface RoomRepository extends JpaRepository<QuizzRoom, Long> {
 
-    private static final String CODE_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private static final int MAX_TRIES = 10;
+    String CODE_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    int MAX_TRIES = 10;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
-    public Optional<String> generateUniqueCode() {
+    default Optional<String> generateUniqueCode() {
         // Code is a combination of 6 uppercase letters or digits
         StringBuilder code = new StringBuilder();
         int tries = 0;
@@ -29,18 +24,5 @@ public class RoomRepository {
         return Optional.of(code.toString());
     }
 
-    public Optional<QuizzRoom> findByCode(String code) {
-        return entityManager.createQuery("SELECT qr FROM QuizzRoom qr WHERE qr.code = :code", QuizzRoom.class)
-                .setParameter("code", code).getResultList().stream().findFirst();
-    }
-
-    public void save(QuizzRoom room) {
-        entityManager.getTransaction().begin();
-        entityManager.persist(room);
-        entityManager.getTransaction().commit();
-    }
-
-    public List<QuizzRoom> findAll() {
-        return entityManager.createQuery("SELECT qr FROM QuizzRoom qr", QuizzRoom.class).getResultList();
-    }
+    Optional<QuizzRoom> findByCode(String code);
 }
