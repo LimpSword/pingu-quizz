@@ -37,4 +37,12 @@ public class Quizz {
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Question> questions;
+
+    public static Quizz minimal(Quizz quizz) {
+        Quizz minimal = new Quizz();
+        minimal.setName(quizz.getName());
+        minimal.setDescription(quizz.getDescription());
+        minimal.setImage(quizz.getImage());
+        return minimal;
+    }
 }

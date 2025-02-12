@@ -1,7 +1,7 @@
 <template>
   <div
     class="min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 flex flex-col items-center justify-center p-4">
-    <div v-if="currentQuestion"
+    <div v-if="currentQuestion && started"
          class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl text-center">
       <div class="text-2xl font-bold text-gray-800 mb-4">
         Temps restant: {{ timer }}s
@@ -43,7 +43,18 @@
       </div>
     </div>
 
-    <div v-else class="text-center">
+    <div v-if="!started" class="text-center">
+      <h2 class="text-4xl font-bold text-white mb-4">
+        Le Quiz va bientôt démarrer<span class="min-w-[1.5em] inline-block text-left">{{ dots}}</span>
+      </h2>
+      <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl text-center opacity-85">
+        <img src="https://placehold.co/150" alt="Quiz Image" class="mx-auto mb-4 rounded-lg shadow-md"/>
+        <h3 class="text-2xl font-bold text-white mb-2">{{ quiz?.name }}</h3>
+        <p class="text-lg text-white">{{ quiz?.description }}</p>
+      </div>
+    </div>
+
+    <div v-if="!currentQuestion && started" class="text-center">
       <h2 class="text-4xl font-bold text-white mb-4">Quiz Terminé!</h2>
       <p class="text-xl text-white mb-6">Votre score: {{ score }}</p>
     </div>
@@ -51,30 +62,68 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
+import { Client } from "@stomp/stompjs";
 
 export default {
-  setup() {
+  props: {
+    code: String,
+  },
+  setup(props) {
     const currentQuestion = ref(null);
+    const roomCode = ref(props.code);
     const timer = ref(10);
     const score = ref(0);
+    const started = ref(false);
+    const paused = ref(false);
     const openAnswer = ref("");
-    let ws;
+    const dots = ref("");
+    const quiz = ref(null);
+    let stompClient = null;
     let interval;
 
     const setupWebSocket = () => {
-      ws = new WebSocket("ws://localhost:8080/quiz");
+      const socket = new SockJS("http://localhost:8080/api/quiz");
+      stompClient = new Client({
+        webSocketFactory: () => socket,
+        reconnectDelay: 5000,
+        onConnect: () => {
+          console.log("Connected to WebSocket");
 
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === "QUESTION") {
-          currentQuestion.value = data.question;
-          timer.value = 10;
-          startTimer();
-        } else if (data.type === "RESULT") {
-          if (data.correct) score.value++;
+          // Subscribe to private messages for the player
+          stompClient.subscribe("/user/queue/quiz", (message) => {
+            const data = JSON.parse(message.body);
+            console.log("Received:", data);
+
+            if (data.type === "INFO") {
+              quiz.value = data.quizz;
+            } else if (data.type === "QUESTION") {
+              currentQuestion.value = data.question;
+              timer.value = 10;
+              startTimer();
+            } else if (data.type === "RESULT") {
+              if (data.correct) score.value++;
+            }
+          });
+
+          stompClient.publish({
+            destination: "/app/join",
+            body: JSON.stringify({ "roomCode": roomCode.value }),
+          });
+        },
+      });
+
+      stompClient.activate();
+    };
+
+    const startDotAnimation = () => {
+      setInterval(() => {
+        if (dots.value.length < 3) {
+          dots.value += ".";
+        } else {
+          dots.value = "";
         }
-      };
+      }, 500);
     };
 
     const startTimer = () => {
@@ -87,18 +136,23 @@ export default {
     };
 
     const submitAnswer = (answer) => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({type: "ANSWER", answer}));
+      if (stompClient && stompClient.connected) {
+        const roomCode = "XYZ123"; // Should be dynamically assigned
+        stompClient.publish({
+          destination: "/app/answer",
+          body: JSON.stringify({ roomCode, answers: [answer] }),
+        });
       }
     };
 
+    onMounted(startDotAnimation);
     onMounted(setupWebSocket);
     onUnmounted(() => {
       clearInterval(interval);
-      ws.close();
+      if (stompClient) stompClient.deactivate();
     });
 
-    return {currentQuestion, timer, score, openAnswer, submitAnswer};
+    return { currentQuestion, timer, started, paused, score, dots, quiz, openAnswer, submitAnswer };
   },
 };
 </script>
