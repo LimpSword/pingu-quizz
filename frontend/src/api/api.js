@@ -18,6 +18,10 @@ export const fetcher = async (url, options = {}) => {
     throw new Error(response.statusText);
   }
 
+  if (response.status !== 200) {
+    return response;
+  }
+
   return response.json();
 }
 

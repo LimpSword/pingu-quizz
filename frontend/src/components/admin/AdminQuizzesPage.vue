@@ -20,8 +20,7 @@
         <thead class="bg-gray-50">
         <tr>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description
-          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
         </tr>
@@ -69,21 +68,50 @@
         Créer un nouveau quizz
       </router-link>
     </div>
+
+    <!-- Room Management Section -->
+    <div class="mt-12 bg-white p-6 rounded-lg shadow">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-4">Gestion des Salles</h2>
+
+      <div class="mb-4">
+        <input
+          v-model="newRoomName"
+          type="text"
+          placeholder="Nom de la salle"
+          class="border border-gray-300 rounded px-3 py-2 w-full"
+        />
+        <button
+          @click="createRoom"
+          class="mt-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-all duration-200"
+        >
+          Créer une salle
+        </button>
+      </div>
+
+      <h3 class="text-xl font-medium text-gray-700 mt-6">Salles actives</h3>
+      <ul class="mt-2">
+        <li v-for="room in activeRooms" :key="room.id" class="py-2 border-b border-gray-200">
+          {{ room.name }} {{ room.code}}
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
 <script>
-import {computed, onMounted, ref} from "vue";
-import {useRouter} from "vue-router";
-import {fetcher} from "@/api/api.js";
+import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import { fetcher } from "@/api/api.js";
 
 export default {
   setup() {
     const router = useRouter();
     const quizzes = ref([]);
+    const rooms = ref([]);
+    const newRoomName = ref("");
     const showActiveOnly = ref(false);
 
-    // Fetch quizzes from the backend
+    // Fetch quizzes
     const fetchQuizzes = async () => {
       try {
         quizzes.value = await fetcher("/quizz/all");
@@ -92,40 +120,63 @@ export default {
       }
     };
 
-    // Filter quizzes based on active status
-    const filteredQuizzes = computed(() => {
-      return showActiveOnly.value
-        ? quizzes.value.filter((quiz) => quiz.isActive)
-        : quizzes.value;
-    });
-
-    // Edit a quiz
-    const editQuiz = (quizId) => {
-      router.push(`/admin/quizzes/edit/${quizId}`);
-    };
-
-    // Delete a quiz
-    const deleteQuiz = async (quizId) => {
-      if (confirm("Êtes-vous sûr de vouloir supprimer ce quizz ?")) {
-        try {
-          await fetch(`/api/quizzes/${quizId}`, {method: "DELETE"});
-          await fetchQuizzes(); // Refresh the list
-        } catch (error) {
-          console.error("Failed to delete quiz:", error);
-        }
+    // Fetch active rooms
+    const fetchRooms = async () => {
+      try {
+        rooms.value = await fetcher("/room/all");
+      } catch (error) {
+        console.error("Failed to fetch rooms:", error);
       }
     };
 
+    // Create a new room
+    const createRoom = async () => {
+      if (!newRoomName.value.trim()) return;
+      try {
+        await fetcher("/room/create", {
+          method: "POST",
+          body: JSON.stringify({ name: newRoomName.value }),
+          headers: { "Content-Type": "application/json" },
+        });
+        newRoomName.value = "";
+        fetchRooms(); // Refresh room list
+      } catch (error) {
+        console.error("Failed to create room:", error);
+      }
+    };
+
+    // Filter quizzes
+    const filteredQuizzes = computed(() => {
+      return showActiveOnly.value ? quizzes.value.filter(q => q.isActive) : quizzes.value;
+    });
+
+    // Active rooms
+    const activeRooms = computed(() => rooms.value);
+
     onMounted(() => {
       fetchQuizzes();
+      fetchRooms();
     });
 
     return {
       quizzes,
       showActiveOnly,
       filteredQuizzes,
-      editQuiz,
-      deleteQuiz,
+      rooms,
+      newRoomName,
+      activeRooms,
+      editQuiz: (id) => router.push(`/admin/quizzes/edit/${id}`),
+      deleteQuiz: async (id) => {
+        if (confirm("Êtes-vous sûr de vouloir supprimer ce quizz ?")) {
+          try {
+            await fetch(`/api/quizzes/${id}`, { method: "DELETE" });
+            await fetchQuizzes();
+          } catch (error) {
+            console.error("Failed to delete quiz:", error);
+          }
+        }
+      },
+      createRoom,
     };
   },
 };

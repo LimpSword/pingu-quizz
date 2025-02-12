@@ -21,6 +21,7 @@
           type="text"
           id="quizCode"
           v-model="quizCode"
+          @input="quizCode = quizCode.toUpperCase().substring(0, 6)"
           placeholder="ABC123"
           class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
         />
@@ -103,6 +104,7 @@
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";
 import { ref } from "vue";
+import {fetcher} from "@/api/api.js";
 
 export default {
   setup() {
@@ -124,7 +126,7 @@ export default {
       router.push("/login");
     };
 
-    const joinQuiz = () => {
+    const joinQuiz = async () => {
       if (!quizCode.value) {
         showError("Veuillez entrer un code de quiz.");
         return;
@@ -135,15 +137,21 @@ export default {
       }
 
       isLoading.value = true;
-      // Simulate API call or quiz joining logic
-      setTimeout(() => {
-        isLoading.value = false;
-        console.log("Joining quiz with code:", quizCode.value);
-        if (!isConnected) {
-          console.log("Username:", username.value);
-        }
-        // Redirect to the quiz page or perform other actions
-      }, 2000);
+
+      await fetcher("/room/check/" + quizCode.value)
+        .then((response) => {
+          if (response.status === 200) {
+            router.push("/play/" + quizCode.value);
+          } else {
+            showError("Aucune salle trouvée avec ce code.");
+            isLoading.value = false;
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to check quiz code:", error);
+          showError("Une erreur s'est produite. Veuillez réessayer.");
+          isLoading.value = false;
+        });
     };
 
     const showError = (message) => {
