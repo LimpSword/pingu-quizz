@@ -49,6 +49,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore();
+  auth.removeTokenIfExpired();
   if (to.meta.requiresAdmin && !auth.isAdmin) {
     next({path: '/'});
   } else {

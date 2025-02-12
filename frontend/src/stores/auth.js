@@ -33,6 +33,14 @@ export const useAuthStore = defineStore("auth", {
       localStorage.removeItem("token");
       localStorage.removeItem("roles");
     },
+    removeTokenIfExpired() {
+      if (this.token) {
+        const token = JSON.parse(atob(this.token.split(".")[1]));
+        if (token.exp < Date.now() / 1000) {
+          this.logout();
+        }
+      }
+    }
   },
   getters: {
     isAuthenticated: (state) => !!state.token,
