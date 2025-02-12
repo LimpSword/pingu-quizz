@@ -129,7 +129,7 @@ export default {
 
     // Fetch initial data
     const fetchRoomData = async () => {
-      const response = await fetcher('/room/current/' + roomCode.value);
+      const response = await fetcher('/room/info/' + roomCode.value);
       if (response.ok) {
         const data = await response.json();
         currentQuiz.value = data.quizz;

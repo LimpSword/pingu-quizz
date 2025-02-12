@@ -37,6 +37,8 @@ public class RoomController {
         if (room.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(room.get());
+
+        QuizzRoom minimal = QuizzRoom.minimal(room.get());
+        return ResponseEntity.ok(minimal);
     }
 }

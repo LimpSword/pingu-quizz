@@ -39,6 +39,10 @@ public class Question {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Answer> answers;
 
+    public List<Answer> getCorrectAnswers() {
+        return answers.stream().filter(Answer::isCorrect).toList();
+    }
+
     public enum Type {
         MULTIPLE_CHOICE,
         TRUE_FALSE,

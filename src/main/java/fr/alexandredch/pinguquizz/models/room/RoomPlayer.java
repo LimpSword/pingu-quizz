@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.util.List;
 
@@ -32,4 +33,6 @@ public class RoomPlayer {
 
     @ElementCollection(fetch = FetchType.EAGER)
     private List<Boolean> answers;
+
+    private transient WebSocketSession session;
 }
