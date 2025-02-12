@@ -26,7 +26,7 @@ public class QuizWebSocketController {
     }
 
     @MessageMapping("/join")
-    @SendTo("/topic/quiz")
+    @SendTo("/user/queue/quiz")
     public Map<String, Object> joinRoom(@Payload Map<String, String> payload, @Header("simpSessionId") String sessionId) {
         System.out.println(payload);
         String roomCode = payload.get("roomCode");
@@ -34,11 +34,11 @@ public class QuizWebSocketController {
         if (room.isEmpty()) {
             throw new IllegalArgumentException("Room not found");
         }
-        if (room.get().getQuizz() == null) {
-            throw new IllegalArgumentException("Quizz not found");
-        }
         UUID uuid = UUID.randomUUID();
         sessionPlayerMap.put(sessionId, uuid.toString());
+        if (room.get().getQuizz() == null) {
+            return Map.of("type", "WAITING", "playerId", uuid.toString());
+        }
         return Map.of("type", "INFO", "quizz", Quizz.minimal(room.get().getQuizz()), "playerId", uuid.toString());
     }
 

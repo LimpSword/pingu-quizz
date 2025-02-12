@@ -72,6 +72,7 @@ export default {
   setup(props) {
     const currentQuestion = ref(null);
     const roomCode = ref(props.code);
+    const playerId = ref(null);
     const timer = ref(10);
     const score = ref(0);
     const started = ref(false);
@@ -97,6 +98,9 @@ export default {
 
             if (data.type === "INFO") {
               quiz.value = data.quizz;
+              playerId.value = data.playerId;
+            } else if (data.type === "WAITING") {
+              playerId.value = data.playerId;
             } else if (data.type === "QUESTION") {
               currentQuestion.value = data.question;
               timer.value = 10;
