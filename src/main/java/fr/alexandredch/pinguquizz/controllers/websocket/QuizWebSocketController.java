@@ -34,22 +34,20 @@ public class QuizWebSocketController {
         if (room.isEmpty()) {
             throw new IllegalArgumentException("Room not found");
         }
-        UUID uuid = UUID.randomUUID();
-        sessionPlayerMap.put(sessionId, uuid.toString());
+        UUID playerId = UUID.randomUUID();
+        sessionPlayerMap.put(sessionId, playerId.toString());
         if (room.get().getQuizz() == null) {
-            return Map.of("type", "WAITING", "playerId", uuid.toString());
+            return Map.of("type", "WAITING", "playerId", playerId.toString());
         }
-        return Map.of("type", "INFO", "quizz", Quizz.minimal(room.get().getQuizz()), "playerId", uuid.toString());
+        return Map.of("type", "INFO", "quizz", Quizz.minimal(room.get().getQuizz()), "playerId", playerId.toString());
     }
 
     @MessageMapping("/answer")
     public void handleAnswer(@Payload Map<String, Object> received, @Header("simpSessionId") String sessionId) {
         String roomCode = (String) received.get("roomCode");
         List<String> answers = (List<String>) received.get("answers");
-        String playerName = sessionPlayerMap.getOrDefault(sessionId, "Unknown Player");
+        String playerId = sessionPlayerMap.getOrDefault(sessionId, "Unknown Player");
         Optional<QuizzRoom> room = roomRepository.findByCode(roomCode);
-        if (room.isPresent()) {
-            room.get().answer(playerName, answers);
-        }
+        room.ifPresent(quizzRoom -> quizzRoom.answer(playerId, answers));
     }
 }

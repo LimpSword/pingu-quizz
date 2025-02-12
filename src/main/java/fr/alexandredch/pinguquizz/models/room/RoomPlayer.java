@@ -33,5 +33,5 @@ public class RoomPlayer {
     @ElementCollection(fetch = FetchType.EAGER)
     private List<Boolean> answers;
 
-    private transient List<String> sessionIds;
+    private transient String playerId;
 }

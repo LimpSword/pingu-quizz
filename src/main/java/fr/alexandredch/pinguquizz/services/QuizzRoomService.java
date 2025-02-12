@@ -7,7 +7,6 @@ import fr.alexandredch.pinguquizz.models.room.RoomPlayer;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -35,7 +34,7 @@ public class QuizzRoomService {
 
     public void sendAnswer(QuizzRoom quizzRoom, String playerSessionId) {
         boolean correct = quizzRoom.getPlayers().stream()
-                .filter(player -> player.getSessionIds().contains(playerSessionId))
+                .filter(player -> player.getPlayerId().equals(playerSessionId))
                 .findFirst()
                 .orElseThrow()
                 .getAnswers()
@@ -46,7 +45,7 @@ public class QuizzRoomService {
     }
 
     public void endQuestion(QuizzRoom quizzRoom) {
-        for (String playerSessionId : quizzRoom.getPlayers().stream().map(RoomPlayer::getSessionIds).flatMap(List::stream).toList()) {
+        for (String playerSessionId : quizzRoom.getPlayers().stream().map(RoomPlayer::getPlayerId).toList()) {
             sendAnswer(quizzRoom, playerSessionId);
         }
 

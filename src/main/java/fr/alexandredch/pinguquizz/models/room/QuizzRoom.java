@@ -56,12 +56,12 @@ public class QuizzRoom {
         return minimal;
     }
 
-    public void answer(String playerName, List<String> answers) {
+    public void answer(String playerId, List<String> answers) {
         Question currentQuestion = quizz.getQuestions().get(this.currentQuestion);
 
         // Check if all correct answers are in the answers list
         if (currentQuestion.getCorrectAnswers().stream().allMatch(answer -> answers.contains(answer.getAnswer()))) {
-            RoomPlayer player = players.stream().filter(p -> p.getName().equals(playerName)).findFirst().orElseThrow();
+            RoomPlayer player = players.stream().filter(p -> p.getPlayerId().equals(playerId)).findFirst().orElseThrow();
             player.getAnswers().set(this.currentQuestion, true);
         }
     }

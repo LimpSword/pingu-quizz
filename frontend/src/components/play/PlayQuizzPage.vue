@@ -141,7 +141,6 @@ export default {
 
     const submitAnswer = (answer) => {
       if (stompClient && stompClient.connected) {
-        const roomCode = "XYZ123"; // Should be dynamically assigned
         stompClient.publish({
           destination: "/app/answer",
           body: JSON.stringify({ roomCode, answers: [answer] }),
