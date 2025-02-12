@@ -28,5 +28,9 @@ public class QuizzRoom {
     @ManyToOne
     private User owner;
 
+    private String name;
     private String code;
+
+    private boolean paused = false;
+    private boolean started = false;
 }
