@@ -3,6 +3,7 @@ package fr.alexandredch.pinguquizz.controllers.websocket;
 import fr.alexandredch.pinguquizz.models.Quizz;
 import fr.alexandredch.pinguquizz.models.room.QuizzRoom;
 import fr.alexandredch.pinguquizz.repositories.RoomRepository;
+import fr.alexandredch.pinguquizz.services.AdminRoomService;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -16,13 +17,15 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
-public class QuizWebSocketController {
+public class QuizzRoomWebSocketController {
 
     private final RoomRepository roomRepository;
+    private final AdminRoomService adminRoomService;
     private final Map<String, String> sessionPlayerMap = new ConcurrentHashMap<>();
 
-    public QuizWebSocketController(RoomRepository roomRepository) {
+    public QuizzRoomWebSocketController(RoomRepository roomRepository, AdminRoomService adminRoomService) {
         this.roomRepository = roomRepository;
+        this.adminRoomService = adminRoomService;
     }
 
     @MessageMapping("/join")
@@ -34,8 +37,13 @@ public class QuizWebSocketController {
         if (room.isEmpty()) {
             throw new IllegalArgumentException("Room not found");
         }
+        String playerName = payload.get("playerName");
         UUID playerId = UUID.randomUUID();
         sessionPlayerMap.put(sessionId, playerId.toString());
+
+        room.get().addPlayer(playerName, playerId.toString());
+
+        adminRoomService.updatePlayerList(roomCode);
         if (room.get().getQuizz() == null) {
             return Map.of("type", "WAITING", "playerId", playerId.toString());
         }

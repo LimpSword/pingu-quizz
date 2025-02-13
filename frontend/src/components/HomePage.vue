@@ -141,7 +141,7 @@ export default {
       await fetcher("/room/check/" + quizCode.value)
         .then((response) => {
           if (response.status === 200) {
-            router.push("/play/" + quizCode.value);
+            router.push("/play/" + quizCode.value + "?username=" + username.value);
           } else {
             showError("Aucune salle trouvée avec ce code.");
             isLoading.value = false;

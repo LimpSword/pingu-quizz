@@ -56,6 +56,14 @@ public class QuizzRoom {
         return minimal;
     }
 
+    public RoomPlayer addPlayer(String playerName, String playerId) {
+        RoomPlayer player = new RoomPlayer();
+        player.setPlayerId(playerId);
+        player.setName(playerName);
+        players.add(player);
+        return player;
+    }
+
     public void answer(String playerId, List<String> answers) {
         Question currentQuestion = quizz.getQuestions().get(this.currentQuestion);
 

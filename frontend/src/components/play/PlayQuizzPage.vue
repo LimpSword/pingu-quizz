@@ -70,6 +70,7 @@ export default {
     code: String,
   },
   setup(props) {
+    const username = ref(this.$route.params.username);
     const currentQuestion = ref(null);
     const roomCode = ref(props.code);
     const playerId = ref(null);
@@ -110,9 +111,10 @@ export default {
             }
           });
 
+          // TODO: if we already have a playerId, we should send a join message
           stompClient.publish({
             destination: "/app/join",
-            body: JSON.stringify({ "roomCode": roomCode.value }),
+            body: JSON.stringify({ "roomCode": roomCode.value, "playerName": username}),
           });
         },
       });
