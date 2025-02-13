@@ -56,12 +56,20 @@ public class QuizzRoom {
         return minimal;
     }
 
+    public boolean hasPlayer(String playerId) {
+        return players.stream().anyMatch(p -> p.getPlayerId().equals(playerId));
+    }
+
     public RoomPlayer addPlayer(String playerName, String playerId) {
         RoomPlayer player = new RoomPlayer();
         player.setPlayerId(playerId);
         player.setName(playerName);
         players.add(player);
         return player;
+    }
+
+    public void removePlayer(String playerId) {
+        players.removeIf(p -> p.getPlayerId().equals(playerId));
     }
 
     public void answer(String playerId, List<String> answers) {

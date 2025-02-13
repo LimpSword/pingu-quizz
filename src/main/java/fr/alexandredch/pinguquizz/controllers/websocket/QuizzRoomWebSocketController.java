@@ -4,11 +4,13 @@ import fr.alexandredch.pinguquizz.models.Quizz;
 import fr.alexandredch.pinguquizz.models.room.QuizzRoom;
 import fr.alexandredch.pinguquizz.repositories.RoomRepository;
 import fr.alexandredch.pinguquizz.services.AdminRoomService;
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.util.List;
 import java.util.Map;
@@ -38,16 +40,32 @@ public class QuizzRoomWebSocketController {
             throw new IllegalArgumentException("Room not found");
         }
         String playerName = payload.get("playerName");
-        UUID playerId = UUID.randomUUID();
-        sessionPlayerMap.put(sessionId, playerId.toString());
-
-        room.get().addPlayer(playerName, playerId.toString());
+        String playerId = payload.getOrDefault("playerId", UUID.randomUUID().toString());
+        if (!room.get().hasPlayer(playerId)) {
+            room.get().addPlayer(playerName, playerId);
+        }
+        sessionPlayerMap.put(sessionId, playerId);
 
         adminRoomService.updatePlayerList(roomCode);
         if (room.get().getQuizz() == null) {
-            return Map.of("type", "WAITING", "playerId", playerId.toString());
+            return Map.of("type", "WAITING", "playerId", playerId);
         }
-        return Map.of("type", "INFO", "quizz", Quizz.minimal(room.get().getQuizz()), "playerId", playerId.toString());
+        return Map.of("type", "INFO", "quizz", Quizz.minimal(room.get().getQuizz()), "playerId", playerId);
+    }
+
+    @EventListener
+    public void handleSessionDisconnect(SessionDisconnectEvent event) {
+        String sessionId = event.getSessionId();
+        String playerId = sessionPlayerMap.remove(sessionId);
+
+        if (playerId != null) {
+            roomRepository.findAll().stream()
+                    .filter(room -> room.hasPlayer(playerId))
+                    .forEach(room -> {
+                        room.removePlayer(playerId);
+                        adminRoomService.updatePlayerList(room.getCode());
+                    });
+        }
     }
 
     @MessageMapping("/answer")
