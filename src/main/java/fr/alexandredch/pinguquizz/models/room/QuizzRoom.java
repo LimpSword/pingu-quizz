@@ -3,6 +3,7 @@ package fr.alexandredch.pinguquizz.models.room;
 import fr.alexandredch.pinguquizz.models.Question;
 import fr.alexandredch.pinguquizz.models.Quizz;
 import fr.alexandredch.pinguquizz.models.User;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -38,7 +39,7 @@ public class QuizzRoom {
     private String name;
     private String code;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<RoomPlayer> players;
 
     private boolean paused = false;
@@ -57,13 +58,14 @@ public class QuizzRoom {
     }
 
     public boolean hasPlayer(String playerId) {
-        return players.stream().anyMatch(p -> p.getPlayerId().equals(playerId));
+        return players.stream().anyMatch(p -> p.getPlayerId() != null && p.getPlayerId().equals(playerId));
     }
 
     public RoomPlayer addPlayer(String playerName, String playerId) {
         RoomPlayer player = new RoomPlayer();
         player.setPlayerId(playerId);
         player.setName(playerName);
+
         players.add(player);
         return player;
     }

@@ -9,6 +9,9 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
@@ -40,13 +43,33 @@ public class QuizzRoomWebSocketController {
             throw new IllegalArgumentException("Room not found");
         }
         String playerName = payload.get("playerName");
+        if (playerName == null || playerName.isEmpty()) {
+            // TODO: Get from authentification if possible
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            System.out.println("getting auth");
+            System.out.println(authentication);
+            if (authentication != null && authentication.isAuthenticated() && !(authentication.getPrincipal() instanceof String)) {
+                Object principal = authentication.getPrincipal();
+                if (principal instanceof UserDetails) {
+                    playerName = ((UserDetails) principal).getUsername();
+                } else {
+                    playerName = authentication.getName(); // Default to the auth name if no UserDetails
+                }
+            }
+            System.out.println(playerName);
+        }
+        System.out.println(room.get());
         String playerId = payload.getOrDefault("playerId", UUID.randomUUID().toString());
         if (!room.get().hasPlayer(playerId)) {
+            System.out.println("add player");
             room.get().addPlayer(playerName, playerId);
         }
+        System.out.println(room.get());
         sessionPlayerMap.put(sessionId, playerId);
 
-        adminRoomService.updatePlayerList(roomCode);
+        roomRepository.save(room.get());
+
+        adminRoomService.updatePlayerList(room.get());
         if (room.get().getQuizz() == null) {
             return Map.of("type", "WAITING", "playerId", playerId);
         }
@@ -63,7 +86,7 @@ public class QuizzRoomWebSocketController {
                     .filter(room -> room.hasPlayer(playerId))
                     .forEach(room -> {
                         room.removePlayer(playerId);
-                        adminRoomService.updatePlayerList(room.getCode());
+                        adminRoomService.updatePlayerList(room);
                     });
         }
     }

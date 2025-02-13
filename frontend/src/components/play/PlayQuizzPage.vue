@@ -64,13 +64,16 @@
 <script>
 import { onMounted, onUnmounted, ref } from "vue";
 import { Client } from "@stomp/stompjs";
+import {useRoute} from "vue-router";
 
 export default {
   props: {
     code: String,
   },
   setup(props) {
-    const username = ref(this.$route.params.username);
+    const route = useRoute();
+
+    const username = ref(route.params.username);
     const currentQuestion = ref(null);
     const roomCode = ref(props.code);
     const playerId = ref(null);
@@ -83,6 +86,10 @@ export default {
     const quiz = ref(null);
     let stompClient = null;
     let interval;
+
+    if (username.value === "") {
+      username.value = "Anonyme";
+    }
 
     const setupWebSocket = () => {
       const socket = new SockJS("http://localhost:8080/api/quiz");
@@ -114,7 +121,7 @@ export default {
           // TODO: if we already have a playerId, we should send a join message
           stompClient.publish({
             destination: "/app/join",
-            body: JSON.stringify({ "roomCode": roomCode.value, "playerName": username}),
+            body: JSON.stringify({ "roomCode": roomCode.value, "playerName": username.value}),
           });
         },
       });

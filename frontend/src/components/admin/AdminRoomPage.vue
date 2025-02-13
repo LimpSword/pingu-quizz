@@ -98,10 +98,11 @@
 </template>
 
 <script>
-import {ref, onMounted, watch} from 'vue';
+import {ref, onMounted, watch, onUnmounted} from 'vue';
 import {Chart, registerables} from 'chart.js';
 import {fetcher} from "@/api/api.js";
 import router from "@/router/index.js";
+import {Client} from "@stomp/stompjs";
 
 Chart.register(...registerables);
 
@@ -126,6 +127,36 @@ export default {
     const showQuizSelector = ref(false);
     const availableQuizzes = ref([]);
     const selectedQuizId = ref(null);
+    let stompClient = null;
+
+    const setupWebSocket = () => {
+        const socket = new SockJS("http://localhost:8080/api/quiz");
+        stompClient = new Client({
+          webSocketFactory: () => socket,
+          reconnectDelay: 5000,
+          onConnect: () => {
+            console.log("Connected to WebSocket");
+
+            // Subscribe to private messages for the player
+            stompClient.subscribe("/user/queue/admin/room", (message) => {
+              const data = JSON.parse(message.body);
+              console.log("Received:", data);
+
+              if (data.type === "UPDATE") {
+                // Update current player list
+                players.value = data.players;
+              }
+            });
+
+            // TODO: if we already have a playerId, we should send a join message
+            stompClient.publish({
+              destination: "/app/admin/join",
+              body: JSON.stringify({ "roomCode": roomCode.value}),
+            });
+          },
+        });
+      stompClient.activate();
+    };
 
     // Fetch initial data
     const fetchRoomData = async () => {
@@ -239,6 +270,11 @@ export default {
     // Fetch data on mount
     onMounted(() => {
       fetchRoomData();
+    });
+
+    onMounted(setupWebSocket);
+    onUnmounted(() => {
+      if (stompClient) stompClient.deactivate();
     });
 
     return {

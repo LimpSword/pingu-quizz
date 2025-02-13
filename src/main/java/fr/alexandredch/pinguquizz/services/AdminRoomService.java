@@ -1,6 +1,6 @@
 package fr.alexandredch.pinguquizz.services;
 
-import fr.alexandredch.pinguquizz.repositories.RoomRepository;
+import fr.alexandredch.pinguquizz.models.room.QuizzRoom;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -10,17 +10,15 @@ import java.util.Map;
 public class AdminRoomService {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
-    private final RoomRepository roomRepository;
 
-    public AdminRoomService(SimpMessagingTemplate simpMessagingTemplate, RoomRepository roomRepository) {
+    public AdminRoomService(SimpMessagingTemplate simpMessagingTemplate) {
         this.simpMessagingTemplate = simpMessagingTemplate;
-        this.roomRepository = roomRepository;
     }
 
-    public void updatePlayerList(String roomCode) {
-        simpMessagingTemplate.convertAndSend("/topic/admin/room/" + roomCode + "/players",
+    public void updatePlayerList(QuizzRoom quizzRoom) {
+        simpMessagingTemplate.convertAndSend("/user/queue/admin/room",
                 Map.of("type", "UPDATE",
-                        "roomCode", roomCode,
-                        "players", roomRepository.findByCode(roomCode).orElseThrow().getPlayers()));
+                        "roomCode", quizzRoom.getCode(),
+                        "players", quizzRoom.getPlayers()));
     }
 }
