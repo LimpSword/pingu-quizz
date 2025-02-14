@@ -29,8 +29,6 @@ public class RoomPlayer {
     private Long id;
 
     private String name;
-    @ManyToOne
-    private User user;
 
     @ElementCollection(fetch = FetchType.EAGER)
     private List<Boolean> answers;

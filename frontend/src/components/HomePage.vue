@@ -27,8 +27,8 @@
         />
       </div>
 
-      <!-- Username Input (if not connected) -->
-      <div v-if="!isConnected" class="mb-6">
+      <!-- Username Input -->
+      <div class="mb-6">
         <label for="username" class="block text-sm font-medium text-gray-700">
           Nom d'utilisateur
         </label>

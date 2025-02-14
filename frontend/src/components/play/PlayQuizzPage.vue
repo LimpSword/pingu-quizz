@@ -73,7 +73,7 @@ export default {
   setup(props) {
     const route = useRoute();
 
-    const username = ref(route.params.username);
+    const username = ref(route.query.username);
     const currentQuestion = ref(null);
     const roomCode = ref(props.code);
     const playerId = ref(null);

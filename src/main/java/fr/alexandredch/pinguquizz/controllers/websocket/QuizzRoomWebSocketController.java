@@ -36,32 +36,17 @@ public class QuizzRoomWebSocketController {
     @MessageMapping("/join")
     @SendTo("/user/queue/quiz")
     public Map<String, Object> joinRoom(@Payload Map<String, String> payload, @Header("simpSessionId") String sessionId) {
-        System.out.println(payload);
+        System.out.println("payload: " + payload);
         String roomCode = payload.get("roomCode");
         Optional<QuizzRoom> room = roomRepository.findByCode(roomCode);
         if (room.isEmpty()) {
             throw new IllegalArgumentException("Room not found");
         }
         String playerName = payload.get("playerName");
-        if (playerName == null || playerName.isEmpty()) {
-            // TODO: Get from authentification if possible
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            System.out.println("getting auth");
-            System.out.println(authentication);
-            if (authentication != null && authentication.isAuthenticated() && !(authentication.getPrincipal() instanceof String)) {
-                Object principal = authentication.getPrincipal();
-                if (principal instanceof UserDetails) {
-                    playerName = ((UserDetails) principal).getUsername();
-                } else {
-                    playerName = authentication.getName(); // Default to the auth name if no UserDetails
-                }
-            }
-            System.out.println(playerName);
-        }
         System.out.println(room.get());
         String playerId = payload.getOrDefault("playerId", UUID.randomUUID().toString());
         if (!room.get().hasPlayer(playerId)) {
-            System.out.println("add player");
+            System.out.println("add player with name " + playerName + " and id " + playerId);
             room.get().addPlayer(playerName, playerId);
         }
         System.out.println(room.get());
