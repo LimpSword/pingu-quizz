@@ -1,9 +1,9 @@
 package fr.alexandredch.pinguquizz.models.room;
 
-import fr.alexandredch.pinguquizz.WebApplication;
 import fr.alexandredch.pinguquizz.models.Question;
 import fr.alexandredch.pinguquizz.models.Quizz;
 import fr.alexandredch.pinguquizz.models.User;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -16,14 +16,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 @Entity
 @Getter
@@ -45,13 +39,11 @@ public class QuizzRoom {
     private String name;
     private String code;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<RoomPlayer> players;
 
     private boolean paused = false;
     private boolean started = false;
-
-    private transient TimerTask currentTask;
 
     private int currentQuestion = 0;
 
@@ -65,78 +57,30 @@ public class QuizzRoom {
         return minimal;
     }
 
-    public void setPaused(boolean paused) {
-        this.paused = paused;
-        if (paused) {
-            currentTask.cancel();
-        } else {
-            new Timer().schedule(currentTask = new java.util.TimerTask() {
-                @Override
-                public void run() {
-                    sendQuestion();
-                }
-            }, 5000);
-        }
+    public boolean hasPlayer(String playerId) {
+        return players.stream().anyMatch(p -> p.getPlayerId() != null && p.getPlayerId().equals(playerId));
     }
 
-    public void answer(WebSocketSession session, List<String> answers) {
+    public RoomPlayer addPlayer(String playerName, String playerId) {
+        RoomPlayer player = new RoomPlayer();
+        player.setPlayerId(playerId);
+        player.setName(playerName);
+
+        players.add(player);
+        return player;
+    }
+
+    public void removePlayer(String playerId) {
+        players.removeIf(p -> p.getPlayerId().equals(playerId));
+    }
+
+    public void answer(String playerId, List<String> answers) {
         Question currentQuestion = quizz.getQuestions().get(this.currentQuestion);
 
         // Check if all correct answers are in the answers list
         if (currentQuestion.getCorrectAnswers().stream().allMatch(answer -> answers.contains(answer.getAnswer()))) {
-            RoomPlayer player = players.stream().filter(p -> p.getSession().equals(session)).findFirst().orElseThrow();
+            RoomPlayer player = players.stream().filter(p -> p.getPlayerId().equals(playerId)).findFirst().orElseThrow();
             player.getAnswers().set(this.currentQuestion, true);
         }
-    }
-
-    public void sendQuestion() {
-        // Check if the quizz is finished
-        if (currentQuestion >= quizz.getQuestions().size()) {
-            players.forEach(player -> {
-                try {
-                    player.getSession().sendMessage(new TextMessage(WebApplication.OBJECT_MAPPER.writeValueAsString(Map.of("type", "END"))));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            return;
-        }
-
-        Question question = Question.minimal(quizz.getQuestions().get(currentQuestion));
-
-        players.forEach(player -> {
-            try {
-                player.getSession().sendMessage(new TextMessage(WebApplication.OBJECT_MAPPER.writeValueAsString(Map.of("type", "QUESTION", "question", question))));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    public void sendAnswer() {
-        players.forEach(player -> {
-            try {
-                player.getSession().sendMessage(new TextMessage(WebApplication.OBJECT_MAPPER.writeValueAsString(Map.of("type", "RESULT", "correct", player.getAnswers().get(currentQuestion)))));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    public void endQuestion() {
-        sendAnswer();
-
-        currentQuestion++;
-
-        new Timer().schedule(currentTask = new java.util.TimerTask() {
-            @Override
-            public void run() {
-                sendQuestion();
-            }
-        }, 5000);
-    }
-
-    public List<WebSocketSession> getSessions() {
-        return players.stream().map(RoomPlayer::getSession).toList();
     }
 }

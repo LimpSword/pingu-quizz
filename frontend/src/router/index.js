@@ -15,7 +15,7 @@ const router = createRouter({
       component: HomeView
     },
     {
-      path: "/play/:id",
+      path: "/play/:code",
       name: "play",
       props: true,
       component: PlayQuizzPage

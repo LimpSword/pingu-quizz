@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.web.socket.WebSocketSession;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -21,6 +21,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+@ToString
 public class RoomPlayer {
 
     @Id
@@ -28,11 +29,9 @@ public class RoomPlayer {
     private Long id;
 
     private String name;
-    @ManyToOne
-    private User user;
 
     @ElementCollection(fetch = FetchType.EAGER)
     private List<Boolean> answers;
 
-    private transient WebSocketSession session;
+    private String playerId;
 }

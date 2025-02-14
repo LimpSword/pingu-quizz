@@ -87,18 +87,6 @@
 
       <h1 class="text-3xl font-bold text-gray-800 mb-8">Gestion des Quizz</h1>
 
-      <!-- Filter for Active Quizzes -->
-      <div class="mb-6">
-        <label class="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            v-model="showActiveOnly"
-            class="form-checkbox h-5 w-5 text-blue-600"
-          />
-          <span class="text-gray-700">Afficher uniquement les quizz actifs</span>
-        </label>
-      </div>
-
       <!-- Quizzes Table -->
       <div class="bg-white rounded-lg shadow overflow-hidden">
         <table class="min-w-full">
@@ -108,25 +96,13 @@
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
               Description
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
           </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
-          <tr v-for="quiz in filteredQuizzes" :key="quiz.id">
+          <tr v-for="quiz in quizzes" :key="quiz.id">
             <td class="px-6 py-4 text-sm text-gray-900">{{ quiz.name }}</td>
             <td class="px-6 py-4 text-sm text-gray-700">{{ quiz.description }}</td>
-            <td class="px-6 py-4 text-sm text-gray-700">
-              <span
-                :class="{
-                  'bg-green-100 text-green-800': quiz.isActive,
-                  'bg-red-100 text-red-800': !quiz.isActive,
-                }"
-                class="px-2 py-1 rounded-full text-xs font-medium"
-              >
-                {{ quiz.isActive ? "Actif" : "Inactif" }}
-              </span>
-            </td>
             <td class="px-6 py-4 text-sm text-gray-700">
               <button
                 @click="editQuiz(quiz.id)"
@@ -212,11 +188,6 @@ export default {
       }
     };
 
-    // Filter quizzes
-    const filteredQuizzes = computed(() => {
-      return showActiveOnly.value ? quizzes.value.filter(q => q.isActive) : quizzes.value;
-    });
-
     // Active rooms
     const activeRooms = computed(() => rooms.value);
 
@@ -228,7 +199,6 @@ export default {
     return {
       quizzes,
       showActiveOnly,
-      filteredQuizzes,
       rooms,
       newRoomName,
       activeRooms,

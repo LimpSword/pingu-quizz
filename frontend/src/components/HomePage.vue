@@ -27,8 +27,8 @@
         />
       </div>
 
-      <!-- Username Input (if not connected) -->
-      <div v-if="!isConnected" class="mb-6">
+      <!-- Username Input -->
+      <div class="mb-6">
         <label for="username" class="block text-sm font-medium text-gray-700">
           Nom d'utilisateur
         </label>
@@ -141,7 +141,7 @@ export default {
       await fetcher("/room/check/" + quizCode.value)
         .then((response) => {
           if (response.status === 200) {
-            router.push("/play/" + quizCode.value);
+            router.push("/play/" + quizCode.value + "?username=" + username.value);
           } else {
             showError("Aucune salle trouvée avec ce code.");
             isLoading.value = false;
