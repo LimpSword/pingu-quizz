@@ -184,6 +184,7 @@ export default {
       const response = await fetcher('/room/edit', {
         method: 'POST',
         body: JSON.stringify({code: roomCode.value, action: isPaused.value ? "RESUME" : "PAUSE"}),
+        headers: {"Content-Type": "application/json"},
       });
       if (response.ok) {
         isPaused.value = !isPaused.value;
@@ -195,6 +196,7 @@ export default {
       const response = await fetcher('/room/edit', {
         method: 'POST',
         body: JSON.stringify({code: roomCode.value, action: "START"}),
+        headers: {"Content-Type": "application/json"},
       });
       if (response.ok) {
         isStarted.value = true;

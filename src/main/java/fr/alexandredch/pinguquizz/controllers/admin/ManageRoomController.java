@@ -6,6 +6,7 @@ import fr.alexandredch.pinguquizz.models.room.QuizzRoom;
 import fr.alexandredch.pinguquizz.models.User;
 import fr.alexandredch.pinguquizz.repositories.QuizzRepository;
 import fr.alexandredch.pinguquizz.repositories.RoomRepository;
+import fr.alexandredch.pinguquizz.services.QuizzRoomService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -24,10 +25,12 @@ import java.util.Optional;
 @RequestMapping("/room")
 public class ManageRoomController {
 
+    private final QuizzRoomService quizzRoomService;
     private final RoomRepository roomRepository;
     private final QuizzRepository quizzRepository;
 
-    public ManageRoomController(RoomRepository roomRepository, QuizzRepository quizzRepository) {
+    public ManageRoomController(QuizzRoomService quizzRoomService, RoomRepository roomRepository, QuizzRepository quizzRepository) {
+        this.quizzRoomService = quizzRoomService;
         this.roomRepository = roomRepository;
         this.quizzRepository = quizzRepository;
     }
@@ -77,10 +80,14 @@ public class ManageRoomController {
         if (room.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+        System.out.println(editRoomAction);
         switch (editRoomAction.getAction()) {
             case PAUSE -> room.get().setPaused(true);
             case RESUME -> room.get().setPaused(false);
-            case START -> room.get().setStarted(true);
+            case START -> {
+                room.get().setStarted(true);
+                quizzRoomService.startQuizz(room.get());
+            }
             case CHANGE_QUIZZ -> {
                 Quizz quizz = quizzRepository.findById(Long.valueOf(editRoomAction.getBody())).orElse(null);
                 if (quizz == null) {

@@ -14,6 +14,8 @@ import java.util.TimerTask;
 @Service
 public class QuizzRoomService {
 
+    private static final String WS_DESTINATION = "/user/queue/quiz";
+
     private final SimpMessagingTemplate simpMessagingTemplate;
 
     public QuizzRoomService(SimpMessagingTemplate simpMessagingTemplate) {
@@ -23,11 +25,11 @@ public class QuizzRoomService {
     public void sendQuestion(QuizzRoom quizzRoom) {
         int currentQuestion = quizzRoom.getCurrentQuestion();
         if (currentQuestion >= quizzRoom.getQuizz().getQuestions().size()) {
-            simpMessagingTemplate.convertAndSend("/topic/quiz/" + quizzRoom.getCode(),
+            simpMessagingTemplate.convertAndSend(WS_DESTINATION,
                     WebApplication.OBJECT_MAPPER.convertValue(Map.of("type", "END"), Map.class));
         } else {
             Question question = Question.minimal(quizzRoom.getQuizz().getQuestions().get(currentQuestion));
-            simpMessagingTemplate.convertAndSend("/topic/quiz/" + quizzRoom.getCode(),
+            simpMessagingTemplate.convertAndSend(WS_DESTINATION,
                     WebApplication.OBJECT_MAPPER.convertValue(Map.of("type", "QUESTION", "question", question), Map.class));
         }
     }
@@ -40,7 +42,7 @@ public class QuizzRoomService {
                 .getAnswers()
                 .get(quizzRoom.getCurrentQuestion());
 
-        simpMessagingTemplate.convertAndSend(playerSessionId, "/topic/quiz/" + quizzRoom.getCode(),
+        simpMessagingTemplate.convertAndSend(playerSessionId, WS_DESTINATION,
                 WebApplication.OBJECT_MAPPER.convertValue(Map.of("type", "RESULT", "correct", correct), Map.class));
     }
 
@@ -57,5 +59,11 @@ public class QuizzRoomService {
                 sendQuestion(quizzRoom);
             }
         }, 5000);
+    }
+
+    public void startQuizz(QuizzRoom quizzRoom) {
+        simpMessagingTemplate.convertAndSend(WS_DESTINATION,
+                WebApplication.OBJECT_MAPPER.convertValue(Map.of("type", "START"), Map.class));
+        sendQuestion(quizzRoom);
     }
 }

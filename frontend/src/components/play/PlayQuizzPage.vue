@@ -49,8 +49,8 @@
       </h2>
       <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl text-center opacity-85">
         <img src="https://placehold.co/150" alt="Quiz Image" class="mx-auto mb-4 rounded-lg shadow-md"/>
-        <h3 class="text-2xl font-bold text-white mb-2">{{ quiz?.name }}</h3>
-        <p class="text-lg text-white">{{ quiz?.description }}</p>
+        <h3 class="text-2xl font-bold mb-2">{{ quiz?.name }}</h3>
+        <p class="text-lg">{{ quiz?.description }}</p>
       </div>
     </div>
 
@@ -109,6 +109,8 @@ export default {
               playerId.value = data.playerId;
             } else if (data.type === "WAITING") {
               playerId.value = data.playerId;
+            } else if (data.type === "START") {
+              started.value = true;
             } else if (data.type === "QUESTION") {
               currentQuestion.value = data.question;
               timer.value = 10;
@@ -152,7 +154,7 @@ export default {
       if (stompClient && stompClient.connected) {
         stompClient.publish({
           destination: "/app/answer",
-          body: JSON.stringify({ roomCode, answers: [answer] }),
+          body: JSON.stringify({ "roomCode": roomCode, "answers": [answer] }),
         });
       }
     };
