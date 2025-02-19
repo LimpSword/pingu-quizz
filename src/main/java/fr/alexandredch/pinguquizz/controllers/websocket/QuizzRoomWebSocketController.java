@@ -9,9 +9,6 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
@@ -36,20 +33,18 @@ public class QuizzRoomWebSocketController {
     @MessageMapping("/join")
     @SendTo("/user/queue/quiz")
     public Map<String, Object> joinRoom(@Payload Map<String, String> payload, @Header("simpSessionId") String sessionId) {
-        System.out.println("payload: " + payload);
+        System.out.println(sessionId);
         String roomCode = payload.get("roomCode");
         Optional<QuizzRoom> room = roomRepository.findByCode(roomCode);
         if (room.isEmpty()) {
             throw new IllegalArgumentException("Room not found");
         }
         String playerName = payload.get("playerName");
-        System.out.println(room.get());
         String playerId = payload.getOrDefault("playerId", UUID.randomUUID().toString());
         if (!room.get().hasPlayer(playerId)) {
             System.out.println("add player with name " + playerName + " and id " + playerId);
-            room.get().addPlayer(playerName, playerId);
+            room.get().addPlayer(playerName, playerId, sessionId);
         }
-        System.out.println(room.get());
         sessionPlayerMap.put(sessionId, playerId);
 
         roomRepository.save(room.get());
@@ -67,21 +62,30 @@ public class QuizzRoomWebSocketController {
         String playerId = sessionPlayerMap.remove(sessionId);
 
         if (playerId != null) {
-            roomRepository.findAll().stream()
-                    .filter(room -> room.hasPlayer(playerId))
-                    .forEach(room -> {
-                        room.removePlayer(playerId);
-                        adminRoomService.updatePlayerList(room);
-                    });
+            List<QuizzRoom> rooms = roomRepository.findAll().stream()
+                    .filter(room -> room.hasPlayer(playerId)).toList();
+
+            rooms.forEach(room -> {
+                room.removePlayer(playerId);
+                adminRoomService.updatePlayerList(room);
+            });
+
+            roomRepository.saveAll(rooms);
         }
     }
 
     @MessageMapping("/answer")
     public void handleAnswer(@Payload Map<String, Object> received, @Header("simpSessionId") String sessionId) {
+        System.out.println("received: " + received);
         String roomCode = (String) received.get("roomCode");
         List<String> answers = (List<String>) received.get("answers");
         String playerId = sessionPlayerMap.getOrDefault(sessionId, "Unknown Player");
         Optional<QuizzRoom> room = roomRepository.findByCode(roomCode);
-        room.ifPresent(quizzRoom -> quizzRoom.answer(playerId, answers));
+        room.ifPresent(quizzRoom -> {
+            boolean save = quizzRoom.answer(playerId, answers);
+            if (save) {
+                roomRepository.save(quizzRoom);
+            }
+        });
     }
 }

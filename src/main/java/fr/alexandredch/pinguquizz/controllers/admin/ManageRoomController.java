@@ -94,8 +94,10 @@ public class ManageRoomController {
                     return ResponseEntity.badRequest().body("Quizz not found");
                 }
                 room.get().setQuizz(quizz);
+                quizzRoomService.updateQuiz(room.get());
             }
         }
+        System.out.println(room.get());
         roomRepository.save(room.get());
         return ResponseEntity.ok(room.get());
     }

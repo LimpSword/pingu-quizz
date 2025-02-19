@@ -45,10 +45,12 @@
 
     <div v-if="!started" class="text-center">
       <h2 class="text-4xl font-bold text-white mb-4">
-        Le Quiz va bientôt démarrer<span class="min-w-[1.5em] inline-block text-left">{{ dots}}</span>
+        Le Quiz va bientôt démarrer<span
+        class="min-w-[1.5em] inline-block text-left">{{ dots }}</span>
       </h2>
       <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl text-center opacity-85">
-        <img src="https://placehold.co/150" alt="Quiz Image" class="mx-auto mb-4 rounded-lg shadow-md"/>
+        <img src="https://placehold.co/150" alt="Quiz Image"
+             class="mx-auto mb-4 rounded-lg shadow-md"/>
         <h3 class="text-2xl font-bold mb-2">{{ quiz?.name }}</h3>
         <p class="text-lg">{{ quiz?.description }}</p>
       </div>
@@ -62,8 +64,8 @@
 </template>
 
 <script>
-import { onMounted, onUnmounted, ref } from "vue";
-import { Client } from "@stomp/stompjs";
+import {onMounted, onUnmounted, ref} from "vue";
+import {Client} from "@stomp/stompjs";
 import {useRoute} from "vue-router";
 
 export default {
@@ -103,10 +105,13 @@ export default {
           stompClient.subscribe("/user/queue/quiz", (message) => {
             const data = JSON.parse(message.body);
             console.log("Received:", data);
+            console.log("URL:", stompClient.webSocket._transport.url);
 
             if (data.type === "INFO") {
               quiz.value = data.quizz;
-              playerId.value = data.playerId;
+              if (data.playerId) {
+                playerId.value = data.playerId;
+              }
             } else if (data.type === "WAITING") {
               playerId.value = data.playerId;
             } else if (data.type === "START") {
@@ -123,7 +128,7 @@ export default {
           // TODO: if we already have a playerId, we should send a join message
           stompClient.publish({
             destination: "/app/join",
-            body: JSON.stringify({ "roomCode": roomCode.value, "playerName": username.value}),
+            body: JSON.stringify({"roomCode": roomCode.value, "playerName": username.value}),
           });
         },
       });
@@ -154,7 +159,7 @@ export default {
       if (stompClient && stompClient.connected) {
         stompClient.publish({
           destination: "/app/answer",
-          body: JSON.stringify({ "roomCode": roomCode, "answers": [answer] }),
+          body: JSON.stringify({"roomCode": roomCode.value, "answers": [answer]}),
         });
       }
     };
@@ -166,7 +171,7 @@ export default {
       if (stompClient) stompClient.deactivate();
     });
 
-    return { currentQuestion, timer, started, paused, score, dots, quiz, openAnswer, submitAnswer };
+    return {currentQuestion, timer, started, paused, score, dots, quiz, openAnswer, submitAnswer};
   },
 };
 </script>

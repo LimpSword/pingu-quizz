@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -57,14 +58,35 @@ public class QuizzRoom {
         return minimal;
     }
 
+    public void setQuizz(Quizz quizz) {
+        this.quizz = quizz;
+
+        for (RoomPlayer player : players) {
+            List<RoomAnswer> answers = new ArrayList<>();
+            for (int i = 0; i < quizz.getQuestions().size(); i++) {
+                answers.add(RoomAnswer.byDefault());
+            }
+            player.setAnswers(answers);
+            System.out.println(player);
+        }
+    }
+
     public boolean hasPlayer(String playerId) {
         return players.stream().anyMatch(p -> p.getPlayerId() != null && p.getPlayerId().equals(playerId));
     }
 
-    public RoomPlayer addPlayer(String playerName, String playerId) {
+    public RoomPlayer addPlayer(String playerName, String playerId, String sessionId) {
         RoomPlayer player = new RoomPlayer();
         player.setPlayerId(playerId);
+        player.setSessionId(sessionId);
         player.setName(playerName);
+        if (quizz != null) {
+            List<RoomAnswer> answers = new ArrayList<>();
+            for (int i = 0; i < quizz.getQuestions().size(); i++) {
+                answers.add(RoomAnswer.byDefault());
+            }
+            player.setAnswers(answers);
+        }
 
         players.add(player);
         return player;
@@ -74,13 +96,31 @@ public class QuizzRoom {
         players.removeIf(p -> p.getPlayerId().equals(playerId));
     }
 
-    public void answer(String playerId, List<String> answers) {
+    public boolean answer(String playerId, List<String> answers) {
         Question currentQuestion = quizz.getQuestions().get(this.currentQuestion);
+
+        // Has the player already answered the question?
+        if (players.stream().filter(p -> p.getPlayerId().equals(playerId)).findFirst().orElseThrow().getAnswers().get(this.currentQuestion).isAnswered()) {
+            return false;
+        }
+
+        RoomPlayer player = players.stream().filter(p -> p.getPlayerId().equals(playerId)).findFirst().orElseThrow();
+        RoomAnswer roomAnswer = player.getAnswers().get(this.currentQuestion);
+        roomAnswer.setAnswer(answers.toString());
 
         // Check if all correct answers are in the answers list
         if (currentQuestion.getCorrectAnswers().stream().allMatch(answer -> answers.contains(answer.getAnswer()))) {
-            RoomPlayer player = players.stream().filter(p -> p.getPlayerId().equals(playerId)).findFirst().orElseThrow();
-            player.getAnswers().set(this.currentQuestion, true);
+            System.out.println(playerId);
+            System.out.println(players);
+
+            roomAnswer.setAnswered(true);
+            roomAnswer.setCorrect(true);
+            return true;
         }
+
+        roomAnswer.setAnswered(true);
+        roomAnswer.setCorrect(false);
+
+        return true;
     }
 }
