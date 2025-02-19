@@ -81,7 +81,7 @@
 
       <!-- Admin Panel Button -->
       <button
-        v-if="isAdmin"
+        v-if="isAdmin && isConnected"
         @click="admin"
         class="mt-4 w-full bg-gradient-to-r from-red-600 to-red-500 text-white py-2 px-4 rounded-md hover:from-red-700 hover:to-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
       >
