@@ -5,8 +5,6 @@ import fr.alexandredch.pinguquizz.models.Question;
 import fr.alexandredch.pinguquizz.models.Quizz;
 import fr.alexandredch.pinguquizz.models.room.QuizzRoom;
 import fr.alexandredch.pinguquizz.repositories.RoomRepository;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -61,15 +59,10 @@ public class QuizzRoomService {
                 .getAnswers()
                 .get(quizzRoom.getCurrentQuestion()).isCorrect();
 
-        System.out.println("send answer " + correct + " to " + playerSessionId);
+        System.out.println("send answer " + correct + " to session id " + playerSessionId);
 
-        SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor
-                .create(SimpMessageType.MESSAGE);
-        headerAccessor.setSessionId(playerSessionId);
-        headerAccessor.setLeaveMutable(true);
-
-        simpMessagingTemplate.convertAndSendToUser(playerSessionId, "/queue/quiz",
-                WebApplication.OBJECT_MAPPER.convertValue(Map.of("type", "RESULT", "correct", correct), Map.class), headerAccessor.getMessageHeaders());
+        var message = WebApplication.OBJECT_MAPPER.convertValue(Map.of("type", "RESULT", "correct", correct), Map.class);
+        simpMessagingTemplate.convertAndSendToUser(playerSessionId, "/queue/quiz", message);
     }
 
     public void endQuestion(QuizzRoom quizzRoom) {

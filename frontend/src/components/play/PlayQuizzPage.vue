@@ -100,12 +100,24 @@ export default {
         reconnectDelay: 5000,
         onConnect: () => {
           console.log("Connected to WebSocket");
+          const urlarray = socket._transport.url.split("/");
+          const index = urlarray.length - 2;
+          console.log("session id", urlarray[index]);
+
+          // Subscribe to session id specific messages
+          // The /user prefix doesn't seem to work in this context
+          stompClient.subscribe("/queue/quiz-user" + urlarray[index], (message) => {
+            const data = JSON.parse(message.body);
+
+            if (data.type === "RESULT") {
+              if (data.correct) score.value++;
+            }
+          });
 
           // Subscribe to private messages for the player
           stompClient.subscribe("/user/queue/quiz", (message) => {
             const data = JSON.parse(message.body);
             console.log("Received:", data);
-            console.log("URL:", stompClient.webSocket._transport.url);
 
             if (data.type === "INFO") {
               quiz.value = data.quizz;
@@ -120,8 +132,6 @@ export default {
               currentQuestion.value = data.question;
               timer.value = 10;
               startTimer();
-            } else if (data.type === "RESULT") {
-              if (data.correct) score.value++;
             }
           });
 
