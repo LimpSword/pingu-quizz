@@ -1,4 +1,4 @@
-package fr.alexandredch.pinguquizz.service.storage;
+package fr.alexandredch.pinguquizz.services.storage;
 
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;

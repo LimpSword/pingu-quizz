@@ -2,6 +2,10 @@ import {useAuthStore} from "@/stores/auth.js";
 
 const apiUrl = 'http://localhost:8080/api';
 
+export const apiUrls = {
+  download: `${apiUrl}/storage/files`
+}
+
 export const fetcher = async (url, options = {}) => {
   const authStore = useAuthStore();
   const token = authStore.token;

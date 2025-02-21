@@ -5,7 +5,7 @@ import fr.alexandredch.pinguquizz.models.Question;
 import fr.alexandredch.pinguquizz.models.Quizz;
 import fr.alexandredch.pinguquizz.models.User;
 import fr.alexandredch.pinguquizz.repositories.QuizzRepository;
-import fr.alexandredch.pinguquizz.service.storage.StorageService;
+import fr.alexandredch.pinguquizz.services.storage.StorageService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;

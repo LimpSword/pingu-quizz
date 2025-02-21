@@ -1,7 +1,7 @@
 package fr.alexandredch.pinguquizz;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.alexandredch.pinguquizz.service.storage.StorageService;
+import fr.alexandredch.pinguquizz.services.storage.StorageService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

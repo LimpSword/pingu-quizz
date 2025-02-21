@@ -1,10 +1,11 @@
-package fr.alexandredch.pinguquizz.service.storage;
+package fr.alexandredch.pinguquizz.services.storage;
 
 import fr.alexandredch.pinguquizz.exception.storage.StorageException;
 import fr.alexandredch.pinguquizz.exception.storage.StorageFileNotFoundException;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,7 +44,9 @@ public class FileSystemStorageService implements StorageService {
             try (InputStream inputStream = file.getInputStream()) {
                 Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
             }
-            return newFileName;
+            String hashedFileName = DigestUtils.md5DigestAsHex(newFileName.getBytes());
+            Files.move(destinationFile, destinationFile.resolveSibling(hashedFileName + extension));
+            return hashedFileName;
         } catch (IOException e) {
             throw new StorageException("Failed to store file.", e);
         }
@@ -75,7 +78,6 @@ public class FileSystemStorageService implements StorageService {
                 return resource;
             } else {
                 throw new StorageFileNotFoundException("Could not read file: " + filename);
-
             }
         } catch (MalformedURLException e) {
             throw new StorageFileNotFoundException("Could not read file: " + filename, e);

@@ -15,7 +15,12 @@
       <div v-if="currentQuestion.type === 'MULTIPLE_CHOICE'" class="space-y-4">
         <button v-for="(answer, index) in currentQuestion.answers" :key="index"
                 @click="submitAnswer(answer.answer)"
-                class="w-full bg-blue-100 text-gray-800 py-2 px-4 rounded-md hover:bg-blue-200">
+                :disabled="responded"
+                :class="{
+                  'w-full bg-blue-100 text-gray-800 py-2 px-4 rounded-md hover:bg-blue-200': !responded,
+                  'w-full bg-blue-300 text-gray-800 py-2 px-4 rounded-md cursor-not-allowed': responded && submittedAnswer !== answer.answer,
+                  'w-full bg-green-300 text-gray-800 py-2 px-4 rounded-md cursor-not-allowed': responded && submittedAnswer === answer.answer
+                }">
           {{ answer.answer }}
           <img v-if="answer.image" :src="answer.image" class="mx-auto mt-2 rounded-lg shadow-md"
                style="max-height: 100px;"/>
@@ -24,19 +29,31 @@
 
       <div v-if="currentQuestion.type === 'TRUE_FALSE'" class="space-y-4">
         <button @click="submitAnswer('Vrai')"
-                class="w-full bg-green-100 text-gray-800 py-2 px-4 rounded-md hover:bg-green-200">
+                :disabled="responded"
+                :class="{
+                  'w-full bg-green-100 text-gray-800 py-2 px-4 rounded-md hover:bg-green-200': !responded,
+                  'w-full bg-green-300 text-gray-800 py-2 px-4 rounded-md cursor-not-allowed': responded && submittedAnswer !== 'Vrai',
+                  'w-full bg-green-500 text-white py-2 px-4 rounded-md cursor-not-allowed': responded && submittedAnswer === 'Vrai'
+                }">
           Vrai
         </button>
         <button @click="submitAnswer('Faux')"
-                class="w-full bg-red-100 text-gray-800 py-2 px-4 rounded-md hover:bg-red-200">
+                :disabled="responded"
+                :class="{
+                  'w-full bg-red-100 text-gray-800 py-2 px-4 rounded-md hover:bg-red-200': !responded,
+                  'w-full bg-red-300 text-gray-800 py-2 px-4 rounded-md cursor-not-allowed': responded && submittedAnswer !== 'Faux',
+                  'w-full bg-red-500 text-white py-2 px-4 rounded-md cursor-not-allowed': responded && submittedAnswer === 'Faux'
+                }">
           Faux
         </button>
       </div>
 
       <div v-if="currentQuestion.type === 'OPEN'" class="space-y-4">
         <input v-model="openAnswer" type="text" placeholder="Votre réponse"
+               :disabled="responded"
                class="w-full px-4 py-2 border border-gray-300 rounded-md"/>
         <button @click="submitAnswer(openAnswer)"
+                :disabled="responded"
                 class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
           Soumettre
         </button>
@@ -53,7 +70,7 @@
         class="min-w-[1.5em] inline-block text-left">{{ dots }}</span>
       </h2>
       <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl text-center opacity-85">
-        <img src="https://placehold.co/150" alt="Quiz Image"
+        <img :src="`${imageUrl}/${quiz?.image}`" alt="Quiz Image"
              class="mx-auto mb-4 rounded-lg shadow-md"/>
         <h3 class="text-2xl font-bold mb-2">{{ quiz?.name }}</h3>
         <p class="text-lg">{{ quiz?.description }}</p>
@@ -76,6 +93,7 @@ import {onMounted, onUnmounted, ref} from "vue";
 import {Client} from "@stomp/stompjs";
 import {useRoute} from "vue-router";
 import JSConfetti from 'js-confetti';
+import {apiUrls} from "@/api/api.js";
 
 export default {
   props: {
@@ -100,6 +118,9 @@ export default {
     const resultMessage = ref("");
     const resultClass = ref("");
     const isCorrect = ref(false);
+    const responded = ref(false);
+    const submittedAnswer = ref("");
+    const imageUrl = apiUrls.download
     let stompClient = null;
     let interval;
 
@@ -155,6 +176,8 @@ export default {
               started.value = true;
             } else if (data.type === "QUESTION") {
               currentQuestion.value = data.question;
+              responded.value = false;
+              submittedAnswer.value = "";
               timer.value = 10;
               startTimer();
             } else if (data.type === "END") {
@@ -195,6 +218,8 @@ export default {
 
     const submitAnswer = (answer) => {
       if (stompClient && stompClient.connected) {
+        responded.value = true;
+        submittedAnswer.value = answer;
         stompClient.publish({
           destination: "/app/answer",
           body: JSON.stringify({"roomCode": roomCode.value, "answers": [answer]}),
@@ -209,7 +234,7 @@ export default {
       if (stompClient) stompClient.deactivate();
     });
 
-    return {currentQuestion, timer, started, paused, score, dots, quiz, openAnswer, submitAnswer, showResult, resultMessage, resultClass, isCorrect};
+    return {currentQuestion, timer, started, paused, score, dots, quiz, openAnswer, submitAnswer, showResult, resultMessage, resultClass, isCorrect, responded, submittedAnswer, imageUrl};
   },
 };
 </script>

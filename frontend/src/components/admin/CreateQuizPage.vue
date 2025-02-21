@@ -121,6 +121,20 @@
                   + Ajouter une réponse
                 </button>
               </div>
+              <div v-if="question.type === 'TRUE_FALSE'" class="ml-6 mt-4">
+                <h3 class="text-lg font-medium text-gray-700 mb-2">Réponses</h3>
+                <div class="flex items-center space-x-4">
+                  <p>Quelle est la bonne réponse ?</p>
+                  <div class="flex items-center space-x-2">
+                    <input type="radio" v-model="question.answer" value="true"
+                           class="form-radio h-5 w-5 text-blue-600"/>
+                    <p>Vrai</p>
+                    <input type="radio" v-model="question.answer" value="false"
+                           class="form-radio h-5 w-5 text-blue-600"/>
+                    <p>Faux</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <button type="button" @click="addQuestion"
