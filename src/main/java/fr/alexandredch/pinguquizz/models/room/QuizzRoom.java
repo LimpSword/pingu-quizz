@@ -92,8 +92,17 @@ public class QuizzRoom {
         return player;
     }
 
+    public void updatePlayerSession(String playerId, String newSessionId) {
+        players.stream()
+                .filter(p -> p.getPlayerId().equals(playerId))
+                .findFirst()
+                .ifPresent(player -> player.setSessionId(newSessionId));
+    }
+
     public void removePlayer(String playerId) {
-        players.removeIf(p -> p.getPlayerId().equals(playerId));
+        players.stream().filter(p -> p.getPlayerId().equals(playerId)).forEach(roomPlayer -> {
+            roomPlayer.setSessionId(null);
+        });
     }
 
     public boolean answer(String playerId, List<String> answers) {

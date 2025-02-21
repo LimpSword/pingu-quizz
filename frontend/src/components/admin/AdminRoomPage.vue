@@ -35,8 +35,10 @@
     <div class="bg-white p-6 rounded-lg shadow mb-8">
       <h2 class="text-xl font-semibold text-gray-800 mb-4">Joueurs connectés</h2>
       <div v-if="players.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div v-for="player in players" :key="player.id" class="bg-gray-50 p-4 rounded-lg">
-          <p class="text-gray-700">{{ player.name }}</p>
+        <div v-for="player in players" :key="player.id" >
+          <div v-if="player.connected" class="bg-gray-50 p-4 rounded-lg">
+            <span class="text-gray-700">{{ player.name }}</span> <span class="text-sm">{{player.playerId}}</span>
+          </div>
         </div>
       </div>
       <p v-else class="text-gray-500">Aucun joueur connecté</p>
@@ -145,6 +147,7 @@ export default {
               if (data.type === "UPDATE") {
                 // Update current player list
                 players.value = data.players;
+                console.log(players.value)
                 responsePercentage.value = data.percentageResponded * 100;
               }
             });

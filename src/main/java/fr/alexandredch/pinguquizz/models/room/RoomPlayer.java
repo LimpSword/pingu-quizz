@@ -34,4 +34,8 @@ public class RoomPlayer {
 
     private String playerId;
     private String sessionId;
+
+    public boolean isConnected() {
+        return sessionId != null;
+    }
 }

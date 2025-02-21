@@ -33,27 +33,41 @@ public class QuizzRoomWebSocketController {
     @MessageMapping("/join")
     @SendTo("/user/queue/quiz")
     public Map<String, Object> joinRoom(@Payload Map<String, String> payload, @Header("simpSessionId") String sessionId) {
-        System.out.println(sessionId);
         String roomCode = payload.get("roomCode");
         Optional<QuizzRoom> room = roomRepository.findByCode(roomCode);
         if (room.isEmpty()) {
             throw new IllegalArgumentException("Room not found");
         }
+
         String playerName = payload.get("playerName");
-        String playerId = payload.getOrDefault("playerId", UUID.randomUUID().toString());
-        if (!room.get().hasPlayer(playerId)) {
-            System.out.println("add player with name " + playerName + " and id " + playerId);
-            room.get().addPlayer(playerName, playerId, sessionId);
+        String existingPlayerId = payload.get("playerId");
+        String playerId;
+
+        QuizzRoom quizzRoom = room.get();
+
+        // Check if this is a rejoin attempt
+        if (existingPlayerId != null && quizzRoom.hasPlayer(existingPlayerId)) {
+            // Update the session ID for the existing player
+            playerId = existingPlayerId;
+            quizzRoom.updatePlayerSession(playerId, sessionId);
+        } else {
+            // Create new player
+            playerId = UUID.randomUUID().toString();
+            quizzRoom.addPlayer(playerName, playerId, sessionId);
         }
+
         sessionPlayerMap.put(sessionId, playerId);
+        roomRepository.save(quizzRoom);
+        adminRoomService.update(quizzRoom);
 
-        roomRepository.save(room.get());
-
-        adminRoomService.update(room.get());
-        if (room.get().getQuizz() == null) {
+        if (quizzRoom.getQuizz() == null) {
             return Map.of("type", "WAITING", "playerId", playerId);
         }
-        return Map.of("type", "INFO", "quizz", Quizz.minimal(room.get().getQuizz()), "playerId", playerId);
+        return Map.of(
+                "type", "INFO",
+                "quizz", Quizz.minimal(quizzRoom.getQuizz()),
+                "playerId", playerId
+        );
     }
 
     @EventListener

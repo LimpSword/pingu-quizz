@@ -128,6 +128,24 @@ export default {
       username.value = "Anonyme";
     }
 
+    const loadStoredPlayerId = () => {
+      const storedData = localStorage.getItem(`quiz_player_${roomCode.value}`);
+      if (storedData) {
+        const data = JSON.parse(storedData);
+        playerId.value = data.playerId;
+        username.value = data.username;
+        return true;
+      }
+      return false;
+    };
+
+    const savePlayerData = (pid) => {
+      localStorage.setItem(`quiz_player_${roomCode.value}`, JSON.stringify({
+        playerId: pid,
+        username: username.value
+      }));
+    };
+
     const setupWebSocket = () => {
       const socket = new SockJS("http://localhost:8080/api/quiz");
       stompClient = new Client({
@@ -169,9 +187,13 @@ export default {
               quiz.value = data.quizz;
               if (data.playerId) {
                 playerId.value = data.playerId;
+                savePlayerData(data.playerId);
               }
             } else if (data.type === "WAITING") {
-              playerId.value = data.playerId;
+              if (data.playerId) {
+                playerId.value = data.playerId;
+                savePlayerData(data.playerId);
+              }
             } else if (data.type === "START") {
               started.value = true;
             } else if (data.type === "QUESTION") {
@@ -189,7 +211,11 @@ export default {
 
           stompClient.publish({
             destination: "/app/join",
-            body: JSON.stringify({"roomCode": roomCode.value, "playerName": username.value}),
+            body: JSON.stringify({
+              "roomCode": roomCode.value,
+              "playerName": username.value,
+              "playerId": playerId.value
+            }),
           });
         },
       });
@@ -227,8 +253,11 @@ export default {
       }
     };
 
-    onMounted(startDotAnimation);
-    onMounted(setupWebSocket);
+    onMounted(() => {
+      loadStoredPlayerId();
+      startDotAnimation();
+      setupWebSocket();
+    })
     onUnmounted(() => {
       clearInterval(interval);
       if (stompClient) stompClient.deactivate();
