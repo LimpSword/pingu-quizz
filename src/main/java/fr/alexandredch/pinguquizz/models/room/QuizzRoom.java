@@ -123,4 +123,8 @@ public class QuizzRoom {
 
         return true;
     }
+
+    public float getPercentageResponded() {
+        return (float) players.stream().filter(p -> p.getAnswers().get(this.currentQuestion).isAnswered()).count() / players.size();
+    }
 }

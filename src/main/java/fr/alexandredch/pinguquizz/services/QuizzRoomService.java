@@ -47,7 +47,7 @@ public class QuizzRoomService {
                 public void run() {
                     endQuestion(quizzRoom);
                 }
-            }, 10000);
+            }, question.getTime() * 1000L);
         }
     }
 
@@ -77,7 +77,7 @@ public class QuizzRoomService {
             public void run() {
                 sendQuestion(quizzRoom);
             }
-        }, 5000);
+        }, 5000L);
     }
 
     public void startQuizz(QuizzRoom quizzRoom) {

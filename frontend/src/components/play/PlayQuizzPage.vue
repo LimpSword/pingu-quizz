@@ -178,7 +178,7 @@ export default {
               currentQuestion.value = data.question;
               responded.value = false;
               submittedAnswer.value = "";
-              timer.value = 10;
+              timer.value = data.question.time;
               startTimer();
             } else if (data.type === "END") {
               currentQuestion.value = null;

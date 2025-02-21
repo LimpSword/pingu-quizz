@@ -145,6 +145,7 @@ export default {
               if (data.type === "UPDATE") {
                 // Update current player list
                 players.value = data.players;
+                responsePercentage.value = data.percentageResponded * 100;
               }
             });
 
@@ -167,7 +168,6 @@ export default {
         players.value = data.players;
         isPaused.value = data.paused;
         isStarted.value = data.started;
-        responsePercentage.value = data.responsePercentage;
       } else {
         // Go back to admin page if room is not found
         await router.push('/admin');

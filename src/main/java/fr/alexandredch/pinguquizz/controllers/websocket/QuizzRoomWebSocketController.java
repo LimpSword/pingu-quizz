@@ -49,7 +49,7 @@ public class QuizzRoomWebSocketController {
 
         roomRepository.save(room.get());
 
-        adminRoomService.updatePlayerList(room.get());
+        adminRoomService.update(room.get());
         if (room.get().getQuizz() == null) {
             return Map.of("type", "WAITING", "playerId", playerId);
         }
@@ -67,7 +67,7 @@ public class QuizzRoomWebSocketController {
 
             rooms.forEach(room -> {
                 room.removePlayer(playerId);
-                adminRoomService.updatePlayerList(room);
+                adminRoomService.update(room);
             });
 
             roomRepository.saveAll(rooms);
@@ -85,6 +85,8 @@ public class QuizzRoomWebSocketController {
             boolean save = quizzRoom.answer(playerId, answers);
             if (save) {
                 roomRepository.save(quizzRoom);
+
+                adminRoomService.update(quizzRoom);
             }
         });
     }

@@ -15,10 +15,12 @@ public class AdminRoomService {
         this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
-    public void updatePlayerList(QuizzRoom quizzRoom) {
+    public void update(QuizzRoom quizzRoom) {
+        float percentageResponded = quizzRoom.getPercentageResponded();
         simpMessagingTemplate.convertAndSend("/user/queue/admin/room",
                 Map.of("type", "UPDATE",
                         "roomCode", quizzRoom.getCode(),
-                        "players", quizzRoom.getPlayers()));
+                        "players", quizzRoom.getPlayers(),
+                        "percentageResponded", percentageResponded));
     }
 }
