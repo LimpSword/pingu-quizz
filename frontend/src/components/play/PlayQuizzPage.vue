@@ -91,7 +91,7 @@
 <script>
 import {onMounted, onUnmounted, ref} from "vue";
 import {Client} from "@stomp/stompjs";
-import {useRoute} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import JSConfetti from 'js-confetti';
 import {apiUrls} from "@/api/api.js";
 
@@ -101,6 +101,7 @@ export default {
   },
   setup(props) {
     const route = useRoute();
+    const router = useRouter();
     const jsConfetti = new JSConfetti();
 
     const username = ref(route.query.username);
@@ -159,7 +160,6 @@ export default {
 
           stompClient.subscribe("/queue/quiz-user" + urlarray[index], (message) => {
             const data = JSON.parse(message.body);
-
             if (data.type === "RESULT") {
               if (data.correct) {
                 score.value++;
@@ -182,6 +182,12 @@ export default {
           stompClient.subscribe("/user/queue/quiz", (message) => {
             const data = JSON.parse(message.body);
             console.log("Received:", data);
+
+            if (data.type === "ERROR") {
+              console.error("Error:", data.error);
+              router.push("/");
+              return;
+            }
 
             if (data.type === "INFO") {
               quiz.value = data.quizz;
