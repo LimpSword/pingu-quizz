@@ -44,8 +44,8 @@ public class FileSystemStorageService implements StorageService {
             try (InputStream inputStream = file.getInputStream()) {
                 Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
             }
-            String hashedFileName = DigestUtils.md5DigestAsHex(newFileName.getBytes());
-            Files.move(destinationFile, destinationFile.resolveSibling(hashedFileName + extension));
+            String hashedFileName = DigestUtils.md5DigestAsHex(newFileName.getBytes()) + extension;
+            Files.move(destinationFile, destinationFile.resolveSibling(hashedFileName));
             return hashedFileName;
         } catch (IOException e) {
             throw new StorageException("Failed to store file.", e);

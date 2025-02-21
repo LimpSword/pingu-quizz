@@ -52,6 +52,8 @@ public class QuizzRoomService {
     }
 
     public void sendAnswer(QuizzRoom quizzRoom, String playerId, String playerSessionId) {
+        if (playerSessionId == null) return;
+
         boolean correct = quizzRoom.getPlayers().stream()
                 .filter(player -> player.getPlayerId().equals(playerId))
                 .findFirst()

@@ -36,7 +36,7 @@ public class QuizzRoomWebSocketController {
         String roomCode = payload.get("roomCode");
         Optional<QuizzRoom> room = roomRepository.findByCode(roomCode);
         if (room.isEmpty()) {
-            throw new IllegalArgumentException("Room not found");
+            return Map.of("type", "ERROR", "error", "No Quiz found");
         }
 
         String playerName = payload.get("playerName");
