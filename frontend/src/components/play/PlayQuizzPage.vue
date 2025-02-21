@@ -41,6 +41,10 @@
           Soumettre
         </button>
       </div>
+
+      <div v-if="showResult" class="mt-6">
+        <p class="text-2xl font-bold" :class="resultClass">{{ resultMessage }}</p>
+      </div>
     </div>
 
     <div v-if="!started" class="text-center">
@@ -60,6 +64,10 @@
       <h2 class="text-4xl font-bold text-white mb-4">Quiz Terminé!</h2>
       <p class="text-xl text-white mb-6">Votre score: {{ score }}</p>
     </div>
+
+    <div class="fixed top-4 right-4 bg-white p-4 rounded-lg shadow-lg">
+      <p class="text-xl font-bold">Score: {{ score }}</p>
+    </div>
   </div>
 </template>
 
@@ -67,6 +75,7 @@
 import {onMounted, onUnmounted, ref} from "vue";
 import {Client} from "@stomp/stompjs";
 import {useRoute} from "vue-router";
+import JSConfetti from 'js-confetti';
 
 export default {
   props: {
@@ -74,6 +83,7 @@ export default {
   },
   setup(props) {
     const route = useRoute();
+    const jsConfetti = new JSConfetti();
 
     const username = ref(route.query.username);
     const currentQuestion = ref(null);
@@ -86,6 +96,10 @@ export default {
     const openAnswer = ref("");
     const dots = ref("");
     const quiz = ref(null);
+    const showResult = ref(false);
+    const resultMessage = ref("");
+    const resultClass = ref("");
+    const isCorrect = ref(false);
     let stompClient = null;
     let interval;
 
@@ -104,17 +118,28 @@ export default {
           const index = urlarray.length - 2;
           console.log("session id", urlarray[index]);
 
-          // Subscribe to session id specific messages
-          // The /user prefix doesn't seem to work in this context
           stompClient.subscribe("/queue/quiz-user" + urlarray[index], (message) => {
             const data = JSON.parse(message.body);
 
             if (data.type === "RESULT") {
-              if (data.correct) score.value++;
+              if (data.correct) {
+                score.value++;
+                resultMessage.value = "Correct!";
+                resultClass.value = "text-green-500";
+                isCorrect.value = true;
+                jsConfetti.addConfetti();
+              } else {
+                resultMessage.value = "Incorrect!";
+                resultClass.value = "text-red-500";
+                isCorrect.value = false;
+              }
+              showResult.value = true;
+              setTimeout(() => {
+                showResult.value = false;
+              }, 3000);
             }
           });
 
-          // Subscribe to private messages for the player
           stompClient.subscribe("/user/queue/quiz", (message) => {
             const data = JSON.parse(message.body);
             console.log("Received:", data);
@@ -132,10 +157,13 @@ export default {
               currentQuestion.value = data.question;
               timer.value = 10;
               startTimer();
+            } else if (data.type === "END") {
+              currentQuestion.value = null;
+              timer.value = 0;
+              clearInterval(interval);
             }
           });
 
-          // TODO: if we already have a playerId, we should send a join message
           stompClient.publish({
             destination: "/app/join",
             body: JSON.stringify({"roomCode": roomCode.value, "playerName": username.value}),
@@ -181,7 +209,7 @@ export default {
       if (stompClient) stompClient.deactivate();
     });
 
-    return {currentQuestion, timer, started, paused, score, dots, quiz, openAnswer, submitAnswer};
+    return {currentQuestion, timer, started, paused, score, dots, quiz, openAnswer, submitAnswer, showResult, resultMessage, resultClass, isCorrect};
   },
 };
 </script>
