@@ -90,6 +90,15 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
+    public void delete(String filename) {
+        try {
+            Files.delete(rootLocation.resolve(filename));
+        } catch (IOException e) {
+            throw new StorageException("Failed to delete file.", e);
+        }
+    }
+
+    @Override
     public void init() {
         try {
             Files.createDirectories(rootLocation);

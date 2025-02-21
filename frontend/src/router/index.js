@@ -38,6 +38,12 @@ const router = createRouter({
       meta: {requiresAdmin: true},
     },
     {
+      path: "/admin/quizz/edit/:id",
+      name: "edit-quizz",
+      component: CreateQuizPage,
+      meta: {requiresAdmin: true},
+    },
+    {
       path: "/admin/room/:code",
       name: "admin-room",
       component: AdminRoomPage,

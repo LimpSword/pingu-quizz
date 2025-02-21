@@ -203,11 +203,11 @@ export default {
       newRoomName,
       activeRooms,
       copyRoomCode,
-      editQuiz: (id) => router.push(`/admin/quizzes/edit/${id}`),
+      editQuiz: (id) => router.push(`/admin/quizz/edit/${id}`), // Updated path
       deleteQuiz: async (id) => {
         if (confirm("Êtes-vous sûr de vouloir supprimer ce quizz ?")) {
           try {
-            await fetch(`/api/quizzes/${id}`, {method: "DELETE"});
+            await fetcher(`/quizz/edit/${id}`, {method: "DELETE"});
             await fetchQuizzes();
           } catch (error) {
             console.error("Failed to delete quiz:", error);

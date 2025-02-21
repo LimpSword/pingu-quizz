@@ -7,7 +7,7 @@
         <button @click="router().push('/admin')" class="text-blue-600 hover:text-blue-900">
           < Retour
         </button>
-        <h1 class="ml-5 text-3xl font-bold text-gray-800 ">Créer un nouveau quizz</h1>
+        <h1 class="ml-5 text-3xl font-bold text-gray-800">{{ isEditing ? 'Modifier le quizz' : 'Créer un nouveau quizz' }}</h1>
       </div>
 
       <form @submit.prevent="submitQuiz" class="bg-white p-6 rounded-lg shadow">
@@ -143,7 +143,7 @@
           </button>
         </div>
 
-        <button type="submit" class="btn-primary">Créer le quizz</button>
+        <button type="submit" class="btn-primary">{{ isEditing ? 'Modifier le quizz' : 'Créer le quizz' }}</button>
       </form>
     </div>
 
@@ -162,10 +162,10 @@
 </template>
 
 <script>
-import {ref} from "vue";
-import {useRouter} from "vue-router";
+import {onMounted, ref} from "vue";
+import {useRouter, useRoute} from "vue-router";
 import Question from "@/components/Question.vue";
-import {postFormData} from "@/api/api.js";
+import {fetcher, postFormData} from "@/api/api.js";
 import router from "@/router/index.js";
 
 export default {
@@ -176,7 +176,10 @@ export default {
   },
   components: {Question},
   setup() {
+    const route = useRoute();
     const router = useRouter();
+    const isEditing = ref(false);
+    const quizId = ref(null);
     const quiz = ref({
       name: "",
       description: "",
@@ -247,6 +250,22 @@ export default {
       if (file) quiz.value.questions[questionIndex].answers[answerIndex].image = file;
     };
 
+    const loadQuiz = async (id) => {
+      try {
+        const response = await fetcher(`/quizz/get/${id}`);
+        const quizData = await response.json();
+        quiz.value = {
+          name: quizData.name,
+          description: quizData.description,
+          image: null,
+          questions: quizData.questions,
+        };
+      } catch (error) {
+        console.error("Failed to load quiz:", error);
+      }
+    };
+
+
     const submitQuiz = async () => {
       try {
         const formData = new FormData();
@@ -285,7 +304,11 @@ export default {
           });
         });
 
-        const response = await postFormData("/quizz/create", formData, {
+        const endpoint = isEditing.value
+          ? `/quizz/edit/${quizId.value}`
+          : "/quizz/create";
+
+        const response = await postFormData(endpoint, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -296,6 +319,15 @@ export default {
         console.error("Failed to create quiz:", error);
       }
     };
+
+    onMounted(() => {
+      const id = route.params.id;
+      if (id) {
+        isEditing.value = true;
+        quizId.value = id;
+        loadQuiz(id);
+      }
+    });
 
     return {
       quiz,
@@ -310,6 +342,7 @@ export default {
       uploadQuestionImage,
       uploadAnswerImage,
       submitQuiz,
+      isEditing
     };
   },
 };
