@@ -36,9 +36,6 @@ public class Question {
     private int points;
     private int time;
 
-    // For open questions and true/false questions
-    private String answer;
-
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Answer> answers;
 
@@ -55,9 +52,6 @@ public class Question {
     }
 
     public List<Answer> getCorrectAnswers() {
-        if (type == Type.OPEN || type == Type.TRUE_FALSE) {
-            return List.of(new Answer(-1L, true, answer, null, null));
-        }
         return answers.stream().filter(Answer::isCorrect).toList();
     }
 

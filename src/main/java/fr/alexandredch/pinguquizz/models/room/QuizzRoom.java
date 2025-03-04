@@ -1,5 +1,6 @@
 package fr.alexandredch.pinguquizz.models.room;
 
+import fr.alexandredch.pinguquizz.models.Answer;
 import fr.alexandredch.pinguquizz.models.Question;
 import fr.alexandredch.pinguquizz.models.Quizz;
 import fr.alexandredch.pinguquizz.models.User;
@@ -105,35 +106,78 @@ public class QuizzRoom {
         });
     }
 
-    public boolean answer(String playerId, List<String> answers) {
+    public RoomAnswer answer(String playerId, List<String> answers) {
         Question currentQuestion = quizz.getQuestions().get(this.currentQuestion);
 
         // Has the player already answered the question?
-        if (players.stream().filter(p -> p.getPlayerId().equals(playerId)).findFirst().orElseThrow().getAnswers().get(this.currentQuestion).isAnswered()) {
-            return false;
+        if (players.stream().filter(p -> p.getPlayerId().equals(playerId)).findFirst().orElseThrow()
+                .getAnswers().get(this.currentQuestion).isAnswered()) {
+            return null;
         }
 
         RoomPlayer player = players.stream().filter(p -> p.getPlayerId().equals(playerId)).findFirst().orElseThrow();
         RoomAnswer roomAnswer = player.getAnswers().get(this.currentQuestion);
         roomAnswer.setAnswer(answers.toString());
+        roomAnswer.setAnswered(true);
 
-        // Check if all correct answers are in the answers list
-        if (currentQuestion.getCorrectAnswers().stream().allMatch(answer -> answers.contains(answer.getAnswer()))) {
-            System.out.println(playerId);
-            System.out.println(players);
+        // Debug output to see what's happening
+        System.out.println("Question type: " + currentQuestion.getType());
+        System.out.println("Player answer: " + answers);
+        System.out.println("Question answers: " + currentQuestion.getAnswers());
+        System.out.println("Expected answers: " + currentQuestion.getCorrectAnswers().stream()
+                .map(Answer::getAnswer).toList());
 
-            roomAnswer.setAnswered(true);
-            roomAnswer.setCorrect(true);
-            return true;
+        // Special handling for TRUE_FALSE questions
+        if (currentQuestion.getType() == Question.Type.TRUE_FALSE) {
+            // Convert player's "Vrai"/"Faux" to "True"/"False"
+            String normalizedAnswer = answers.getFirst();
+            if ("Vrai".equalsIgnoreCase(normalizedAnswer)) {
+                normalizedAnswer = "True";
+            } else if ("Faux".equalsIgnoreCase(normalizedAnswer)) {
+                normalizedAnswer = "False";
+            }
+
+            // Check if normalized answer matches any of the correct answers
+            String finalNormalizedAnswer = normalizedAnswer;
+            boolean isCorrect = currentQuestion.getCorrectAnswers().stream()
+                    .anyMatch(a -> a.getAnswer().equalsIgnoreCase(finalNormalizedAnswer));
+
+            System.out.println("Normalized answer: " + normalizedAnswer + ", isCorrect: " + isCorrect);
+            roomAnswer.setCorrect(isCorrect);
+
+            player.getAnswers().set(this.currentQuestion, roomAnswer);
+            return roomAnswer;
         }
 
-        roomAnswer.setAnswered(true);
-        roomAnswer.setCorrect(false);
+        // For other question types, use the existing logic
+        if (currentQuestion.getCorrectAnswers().stream().allMatch(answer -> answers.contains(answer.getAnswer()))) {
+            roomAnswer.setCorrect(true);
 
-        return true;
+            player.getAnswers().set(this.currentQuestion, roomAnswer);
+            return roomAnswer;
+        }
+
+        roomAnswer.setCorrect(false);
+        player.getAnswers().set(this.currentQuestion, roomAnswer);
+        return roomAnswer;
     }
 
     public float getPercentageResponded() {
-        return (float) players.stream().filter(p -> p.getAnswers().get(this.currentQuestion).isAnswered()).count() / players.size();
+        if (quizz == null || players.isEmpty()) {
+            return 0;
+        }
+
+        // If we're at the end of the quiz, return 100% (all players have responded)
+        if (this.currentQuestion >= quizz.getQuestions().size()) {
+            return 1.0f;
+        }
+
+        // Count how many players have answered the current question
+        long playersAnswered = players.stream()
+                .filter(p -> p.getAnswers().size() > this.currentQuestion &&
+                             p.getAnswers().get(this.currentQuestion).isAnswered())
+                .count();
+
+        return (float) playersAnswered / players.size();
     }
 }

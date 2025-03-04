@@ -2,6 +2,7 @@ package fr.alexandredch.pinguquizz.controllers.websocket;
 
 import fr.alexandredch.pinguquizz.models.Quizz;
 import fr.alexandredch.pinguquizz.models.room.QuizzRoom;
+import fr.alexandredch.pinguquizz.models.room.RoomAnswer;
 import fr.alexandredch.pinguquizz.repositories.RoomRepository;
 import fr.alexandredch.pinguquizz.services.AdminRoomService;
 import org.springframework.context.event.EventListener;
@@ -96,12 +97,15 @@ public class QuizzRoomWebSocketController {
         String playerId = sessionPlayerMap.getOrDefault(sessionId, "Unknown Player");
         Optional<QuizzRoom> room = roomRepository.findByCode(roomCode);
         room.ifPresent(quizzRoom -> {
-            boolean save = quizzRoom.answer(playerId, answers);
-            if (save) {
+            RoomAnswer save = quizzRoom.answer(playerId, answers);
+            if (save != null) {
                 roomRepository.save(quizzRoom);
 
                 adminRoomService.update(quizzRoom);
             }
+
+            System.out.println(save);
+            System.out.println(quizzRoom);
         });
     }
 }

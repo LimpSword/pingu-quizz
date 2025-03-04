@@ -7,7 +7,8 @@
         <button @click="router().push('/admin')" class="text-blue-600 hover:text-blue-900">
           < Retour
         </button>
-        <h1 class="ml-5 text-3xl font-bold text-gray-800">{{ isEditing ? 'Modifier le quizz' : 'Créer un nouveau quizz' }}</h1>
+        <h1 class="ml-5 text-3xl font-bold text-gray-800">
+          {{ isEditing ? 'Modifier le quizz' : 'Créer un nouveau quizz' }}</h1>
       </div>
 
       <form @submit.prevent="submitQuiz" class="bg-white p-6 rounded-lg shadow">
@@ -122,16 +123,18 @@
                 </button>
               </div>
               <div v-if="question.type === 'TRUE_FALSE'" class="ml-6 mt-4">
-                <h3 class="text-lg font-medium text-gray-700 mb-2">Réponses</h3>
+                <h3 class="text-lg font-medium text-gray-700 mb-2">Réponse</h3>
                 <div class="flex items-center space-x-4">
                   <p>Quelle est la bonne réponse ?</p>
                   <div class="flex items-center space-x-2">
-                    <input type="radio" v-model="question.answer" value="true"
+                    <input type="radio" id="true-radio" v-model="question.trueAnswer" :value="true"
                            class="form-radio h-5 w-5 text-blue-600"/>
-                    <p>Vrai</p>
-                    <input type="radio" v-model="question.answer" value="false"
-                           class="form-radio h-5 w-5 text-blue-600"/>
-                    <p>Faux</p>
+                    <label for="true-radio">Vrai</label>
+
+                    <input type="radio" id="false-radio" v-model="question.trueAnswer"
+                           :value="false"
+                           class="form-radio h-5 w-5 text-blue-600 ml-4"/>
+                    <label for="false-radio">Faux</label>
                   </div>
                 </div>
               </div>
@@ -143,7 +146,9 @@
           </button>
         </div>
 
-        <button type="submit" class="btn-primary">{{ isEditing ? 'Modifier le quizz' : 'Créer le quizz' }}</button>
+        <button type="submit" class="btn-primary">
+          {{ isEditing ? 'Modifier le quizz' : 'Créer le quizz' }}
+        </button>
       </form>
     </div>
 
@@ -222,6 +227,7 @@ export default {
         points: 1,
         difficulty: "EASY",
         time: 30,
+        trueAnswer: true, // Default value for TRUE_FALSE questions
         answers: [{answer: "", correct: false, image: null}],
       });
       selectedQuestion.value = newIndex;
@@ -254,17 +260,30 @@ export default {
       try {
         const response = await fetcher(`/quizz/get/${id}`);
         const quizData = await response.json();
+
+        // Process questions to set trueAnswer for TRUE_FALSE type
+        const processedQuestions = quizData.questions.map(q => {
+          if (q.type === 'TRUE_FALSE') {
+            // Find the correct answer (should be either "True" or "False")
+            const correctAnswer = q.answers.find(a => a.correct);
+            q.trueAnswer = correctAnswer &&
+              (correctAnswer.answer === "True" ||
+                correctAnswer.answer === "true" ||
+                correctAnswer.answer === "TRUE");
+          }
+          return q;
+        });
+
         quiz.value = {
           name: quizData.name,
           description: quizData.description,
           image: null,
-          questions: quizData.questions,
+          questions: processedQuestions,
         };
       } catch (error) {
         console.error("Failed to load quiz:", error);
       }
     };
-
 
     const submitQuiz = async () => {
       try {
@@ -275,33 +294,48 @@ export default {
           formData.append("image", quiz.value.image);
         }
 
-        console.log("hey")
         quiz.value.questions.forEach((question) => {
-          console.log(question)
           // append all images to a specific form data key
           if (question.image) {
             formData.append(`question_images`, question.image);
           }
 
-          const question_data = {
+          let questionData = {
             question: question.question,
             type: question.type,
             points: question.points,
             difficulty: question.difficulty,
-            time: question.time,
-            answers: question.answers.map((answer) => ({
+            time: question.time
+          };
+
+          // Handle different question types
+          if (question.type === 'TRUE_FALSE') {
+            // For TRUE_FALSE, create two answers and mark one as correct
+            questionData.answers = [
+              {answer: "True", correct: question.trueAnswer === true},
+              {answer: "False", correct: question.trueAnswer === false}
+            ];
+          } else if (question.type === 'MULTIPLE_CHOICE') {
+            // For MULTIPLE_CHOICE, use the existing answers
+            questionData.answers = question.answers.map((answer) => ({
               answer: answer.answer,
               correct: answer.correct,
-            })),
-          };
-          formData.append(`questions`, JSON.stringify(question_data));
-          console.log(JSON.stringify(question_data))
+            }));
+          } else {
+            // For OPEN questions, create a placeholder answer (if needed)
+            questionData.answers = [{answer: "", correct: true}];
+          }
 
-          question.answers.forEach((answer) => {
-            if (answer.image) {
-              formData.append(`answer_images`, answer.image);
-            }
-          });
+          formData.append(`questions`, JSON.stringify(questionData));
+
+          // Only add answer images for MULTIPLE_CHOICE
+          if (question.type === 'MULTIPLE_CHOICE') {
+            question.answers.forEach((answer) => {
+              if (answer.image) {
+                formData.append(`answer_images`, answer.image);
+              }
+            });
+          }
         });
 
         const endpoint = isEditing.value
