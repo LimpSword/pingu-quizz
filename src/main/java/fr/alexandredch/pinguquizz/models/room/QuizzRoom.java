@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +47,10 @@ public class QuizzRoom {
 
     private boolean paused = false;
     private boolean started = false;
+    private boolean archived = false;
+
+    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime completedAt;
 
     private int currentQuestion = 0;
 
@@ -55,6 +60,9 @@ public class QuizzRoom {
         minimal.setCode(room.getCode());
         minimal.setPaused(room.isPaused());
         minimal.setStarted(room.isStarted());
+        minimal.setArchived(room.isArchived());
+        minimal.setCreatedAt(room.getCreatedAt());
+        minimal.setCompletedAt(room.getCompletedAt());
         minimal.setCurrentQuestion(room.getCurrentQuestion());
         return minimal;
     }

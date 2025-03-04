@@ -15,71 +15,135 @@
           </button>
         </div>
 
-        <h3 class="text-xl font-medium text-gray-700 mt-6">Salles actives</h3>
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-          <div class="hidden md:block">
-            <table class="min-w-full">
-              <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gérer
-                </th>
-              </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200">
-              <tr v-for="room in activeRooms" :key="room.id">
-                <td class="px-6 py-4 text-sm text-gray-900">{{ room.name }}</td>
-                <td class="px-6 py-4 text-sm text-gray-700">
-                  {{ room.code }}
-                  <button @click="copyRoomCode(room.code)"
-                          class="copy-btn transition-all duration-200 hover:bg-gray-200 active:bg-gray-300 p-1 rounded">
-                    <img src="/copy-svgrepo-com.svg" alt="Copy Icon" class="w-4 h-4 inline-block"/>
-                  </button>
-                </td>
-                <td class="px-6 py-4 text-sm text-gray-700">
+        <!-- Room Tabs -->
+        <div class="mt-6 mb-4">
+          <div class="flex border-b">
+            <button @click="activeTab = 'active'"
+                    :class="{'border-b-2 border-blue-500 text-blue-600': activeTab === 'active', 'text-gray-500': activeTab !== 'active'}"
+                    class="px-4 py-2 font-medium">
+              Salles actives
+            </button>
+            <button @click="activeTab = 'archived'"
+                    :class="{'border-b-2 border-blue-500 text-blue-600': activeTab === 'archived', 'text-gray-500': activeTab !== 'archived'}"
+                    class="px-4 py-2 font-medium">
+              Historique des salles
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Rooms Table (Shown when activeTab is 'active') -->
+        <div v-if="activeTab === 'active'">
+          <h3 class="text-xl font-medium text-gray-700">Salles actives</h3>
+          <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="hidden md:block">
+              <table class="min-w-full">
+                <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gérer</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                <tr v-for="room in activeRooms" :key="room.id">
+                  <td class="px-6 py-4 text-sm text-gray-900">{{ room.name }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-700">
+                    {{ room.code }}
+                    <button @click="copyRoomCode(room.code)"
+                            class="copy-btn transition-all duration-200 hover:bg-gray-200 active:bg-gray-300 p-1 rounded">
+                      <img src="/copy-svgrepo-com.svg" alt="Copy Icon" class="w-4 h-4 inline-block"/>
+                    </button>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-700">
                     <span
                       :class="{ 'bg-green-100 text-green-800': room.started && !room.paused, 'bg-red-100 text-red-800': !room.started, 'bg-yellow-100 text-yellow-800': room.started && room.paused }"
                       class="px-2 py-1 rounded-full text-xs font-medium">
-                      {{
-                        room.started && !room.paused ? "En cours" : room.started ? "En pause" : "Non démarré"
-                      }}
+                      {{ room.started && !room.paused ? "En cours" : room.started ? "En pause" : "Non démarré" }}
                     </span>
-                </td>
-                <td class="px-6 py-4 text-sm text-gray-700">
-                  <router-link :to="'/admin/room/' + room.code">
-                    <button class="text-blue-600 hover:text-blue-900">Gérer</button>
-                  </router-link>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-700">
+                    <router-link :to="'/admin/room/' + room.code">
+                      <button class="text-blue-600 hover:text-blue-900">Gérer</button>
+                    </router-link>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
 
-          <div class="md:hidden space-y-4">
-            <div v-for="room in activeRooms" :key="room.id"
-                 class="p-4 border rounded-lg bg-gray-50">
-              <div class="flex">
-                <div>
-                  <p class="text-sm font-medium text-gray-900">Nom : {{ room.name }}</p>
-                  <p class="text-sm text-gray-700">Code : {{ room.code }}</p>
+            <!-- Mobile view for active rooms -->
+            <div class="md:hidden space-y-4">
+              <div v-for="room in activeRooms" :key="room.id"
+                   class="p-4 border rounded-lg bg-gray-50">
+                <div class="flex">
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">Nom : {{ room.name }}</p>
+                    <p class="text-sm text-gray-700">Code : {{ room.code }}</p>
+                  </div>
+                  <span
+                    :class="{ 'bg-green-100 text-green-800': room.started && !room.paused, 'bg-red-100 text-red-800': !room.started, 'bg-yellow-100 text-yellow-800': room.started && room.paused }"
+                    class="px-2 py-1 rounded-full text-xs font-medium max-h-fit ml-auto">
+                  {{ room.started && !room.paused ? "En cours" : room.started ? "En pause" : "Non démarré" }}
+                </span>
                 </div>
-                <span
-                  :class="{ 'bg-green-100 text-green-800': room.started && !room.paused, 'bg-red-100 text-red-800': !room.started, 'bg-yellow-100 text-yellow-800': room.started && room.paused }"
-                  class="px-2 py-1 rounded-full text-xs font-medium max-h-fit ml-auto">
-                {{
-                    room.started && !room.paused ? "En cours" : room.started ? "En pause" : "Non démarré"
-                  }}
-              </span>
+                <router-link :to="'/admin/room/' + room.code"
+                             class="block mt-2 text-blue-600 hover:text-blue-900">Gérer
+                </router-link>
               </div>
+            </div>
+          </div>
+        </div>
 
+        <!-- Archived Rooms Table (Shown when activeTab is 'archived') -->
+        <div v-if="activeTab === 'archived'">
+          <h3 class="text-xl font-medium text-gray-700">Historique des salles</h3>
+          <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="hidden md:block">
+              <table class="min-w-full">
+                <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quizz</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Participants</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Voir Résultats</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                <tr v-for="room in archivedRooms" :key="room.id">
+                  <td class="px-6 py-4 text-sm text-gray-900">{{ room.name }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-700">
+                    {{ formatDate(room.completedAt) }}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-700">
+                    {{ room.quizz?.name || 'N/A' }}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-700">
+                    {{ room.players?.length || 0 }}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-700">
+                    <router-link :to="'/admin/room/results/' + room.code">
+                      <button class="text-blue-600 hover:text-blue-900">Voir Résultats</button>
+                    </router-link>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
 
-              <router-link :to="'/admin/room/' + room.code"
-                           class="block mt-2 text-blue-600 hover:text-blue-900">Gérer
-              </router-link>
+            <!-- Mobile view for archived rooms -->
+            <div class="md:hidden space-y-4">
+              <div v-for="room in archivedRooms" :key="room.id"
+                   class="p-4 border rounded-lg bg-gray-50">
+                <p class="text-sm font-medium text-gray-900">{{ room.name }}</p>
+                <p class="text-sm text-gray-700">Date: {{ formatDate(room.completedAt) }}</p>
+                <p class="text-sm text-gray-700">Quizz: {{ room.quizz?.name || 'N/A' }}</p>
+                <p class="text-sm text-gray-700">Participants: {{ room.players?.length || 0 }}</p>
+                <router-link :to="'/admin/room/results/' + room.code"
+                             class="block mt-2 text-blue-600 hover:text-blue-900">Voir Résultats
+                </router-link>
+              </div>
             </div>
           </div>
         </div>
@@ -145,9 +209,11 @@ export default {
   setup() {
     const router = useRouter();
     const quizzes = ref([]);
-    const rooms = ref([]);
+    const activeRooms = ref([]);
+    const archivedRooms = ref([]);
     const newRoomName = ref("");
     const showActiveOnly = ref(false);
+    const activeTab = ref('active');
 
     const copyRoomCode = (code) => {
       navigator.clipboard.writeText(code);
@@ -165,8 +231,17 @@ export default {
     // Fetch active rooms
     const fetchRooms = async () => {
       try {
-        rooms.value = await (await fetcher("/room/all")).json();
-        console.log(rooms.value);
+        const r = await (await fetcher("/room/all")).json();
+        for (const room of r) {
+          if (!room.archived) {
+            activeRooms.value.push(room);
+          } else {
+            archivedRooms.value.push(room);
+          }
+        }
+
+        console.log("rooms", activeRooms.value);
+        console.log("archived rooms", archivedRooms.value);
       } catch (error) {
         console.error("Failed to fetch rooms:", error);
       }
@@ -188,9 +263,6 @@ export default {
       }
     };
 
-    // Active rooms
-    const activeRooms = computed(() => rooms.value);
-
     onMounted(() => {
       fetchQuizzes();
       fetchRooms();
@@ -199,9 +271,10 @@ export default {
     return {
       quizzes,
       showActiveOnly,
-      rooms,
       newRoomName,
       activeRooms,
+      archivedRooms,
+      activeTab,
       copyRoomCode,
       editQuiz: (id) => router.push(`/admin/quizz/edit/${id}`), // Updated path
       deleteQuiz: async (id) => {

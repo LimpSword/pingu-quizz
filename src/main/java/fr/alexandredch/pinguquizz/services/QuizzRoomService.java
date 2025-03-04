@@ -11,6 +11,7 @@ import fr.alexandredch.pinguquizz.repositories.RoomRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -48,6 +49,8 @@ public class QuizzRoomService {
             // Reset room state - mark it explicitly as not started
             quizzRoom.setStarted(false);
             quizzRoom.setCurrentQuestion(0);
+            quizzRoom.setArchived(true);
+            quizzRoom.setCompletedAt(LocalDateTime.now());
             roomRepository.save(quizzRoom);
 
             System.out.println("Quiz room reset: started=" + quizzRoom.isStarted());
