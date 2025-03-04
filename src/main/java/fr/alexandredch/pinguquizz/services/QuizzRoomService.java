@@ -48,7 +48,6 @@ public class QuizzRoomService {
 
             // Reset room state - mark it explicitly as not started
             quizzRoom.setStarted(false);
-            quizzRoom.setCurrentQuestion(0);
             quizzRoom.setArchived(true);
             quizzRoom.setCompletedAt(LocalDateTime.now());
             roomRepository.save(quizzRoom);

@@ -35,6 +35,12 @@ public class AdminRoomWebSocketController {
         if (room.isEmpty()) {
             return ResponseEntity.badRequest().body("Room not found");
         }
+
+        if (room.get().isArchived()) {
+            adminRoomService.sendQuizCompleteUpdate(room.get());
+            return ResponseEntity.badRequest().body("Room is archived");
+        }
+
         UUID playerId = UUID.randomUUID();
         sessionAdminMap.put(sessionId, playerId.toString());
 

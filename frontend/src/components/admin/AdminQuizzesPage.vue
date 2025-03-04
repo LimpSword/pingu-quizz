@@ -123,7 +123,7 @@
                     {{ room.players?.length || 0 }}
                   </td>
                   <td class="px-6 py-4 text-sm text-gray-700">
-                    <router-link :to="'/admin/room/results/' + room.code">
+                    <router-link :to="'/admin/room/' + room.code">
                       <button class="text-blue-600 hover:text-blue-900">Voir Résultats</button>
                     </router-link>
                   </td>
@@ -140,7 +140,7 @@
                 <p class="text-sm text-gray-700">Date: {{ formatDate(room.completedAt) }}</p>
                 <p class="text-sm text-gray-700">Quizz: {{ room.quizz?.name || 'N/A' }}</p>
                 <p class="text-sm text-gray-700">Participants: {{ room.players?.length || 0 }}</p>
-                <router-link :to="'/admin/room/results/' + room.code"
+                <router-link :to="'/admin/room/' + room.code"
                              class="block mt-2 text-blue-600 hover:text-blue-900">Voir Résultats
                 </router-link>
               </div>
@@ -215,6 +215,13 @@ export default {
     const showActiveOnly = ref(false);
     const activeTab = ref('active');
 
+    // Format date for display
+    const formatDate = (dateString) => {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    };
+
     const copyRoomCode = (code) => {
       navigator.clipboard.writeText(code);
     };
@@ -275,6 +282,7 @@ export default {
       activeRooms,
       archivedRooms,
       activeTab,
+      formatDate,
       copyRoomCode,
       editQuiz: (id) => router.push(`/admin/quizz/edit/${id}`), // Updated path
       deleteQuiz: async (id) => {
