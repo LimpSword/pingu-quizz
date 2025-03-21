@@ -157,10 +157,35 @@ public class QuizzRoom {
             return roomAnswer;
         }
 
-        // For other question types, use the existing logic
+        // Special handling for OPEN questions
+        if (currentQuestion.getType() == Question.Type.OPEN) {
+            String expectedAnswer = currentQuestion.getCorrectAnswers().stream()
+                    .findFirst()
+                    .map(Answer::getAnswer)
+                    .orElse("");
+            
+            // Get the player's answer
+            String playerAnswer = answers.isEmpty() ? "" : answers.getFirst();
+            
+            // For empty expected answer, any non-empty answer is valid
+            if (expectedAnswer.isEmpty()) {
+                boolean isValid = !playerAnswer.isEmpty();
+                roomAnswer.setCorrect(isValid);
+                player.getAnswers().set(this.currentQuestion, roomAnswer);
+                return roomAnswer;
+            }
+            
+            // Case insensitive check for open questions
+            boolean isCorrect = playerAnswer.trim().equalsIgnoreCase(expectedAnswer.trim());
+            roomAnswer.setCorrect(isCorrect);
+            
+            player.getAnswers().set(this.currentQuestion, roomAnswer);
+            return roomAnswer;
+        }
+        
+        // For MULTIPLE_CHOICE, use the existing logic
         if (currentQuestion.getCorrectAnswers().stream().allMatch(answer -> answers.contains(answer.getAnswer()))) {
             roomAnswer.setCorrect(true);
-
             player.getAnswers().set(this.currentQuestion, roomAnswer);
             return roomAnswer;
         }

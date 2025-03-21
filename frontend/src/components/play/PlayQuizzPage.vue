@@ -4,7 +4,7 @@
     <div v-if="currentQuestion && started"
          class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl text-center">
       <div class="text-2xl font-bold text-gray-800 mb-4">
-        Temps restant: {{ timer }}s
+        Temps restant : {{ timer }}s
       </div>
 
       <h2 class="text-3xl font-bold text-gray-800 mb-6">{{ currentQuestion.question }}</h2>
@@ -55,8 +55,9 @@
                :disabled="responded"
                class="w-full px-4 py-2 border border-gray-300 rounded-md"/>
         <button @click="submitAnswer(openAnswer)"
-                :disabled="responded"
-                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
+                :disabled="responded || !openAnswer.trim()"
+                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+                :class="{'opacity-50 cursor-not-allowed': !openAnswer.trim()}">
           Soumettre
         </button>
       </div>
@@ -219,6 +220,7 @@ export default {
               currentQuestion.value = data.question;
               responded.value = false;
               submittedAnswer.value = "";
+              openAnswer.value = ""; // Reset open answer field for new questions
               timer.value = data.question.time;
               startTimer();
             } else if (data.type === "END") {

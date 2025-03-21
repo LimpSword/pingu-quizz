@@ -138,6 +138,15 @@
                   </div>
                 </div>
               </div>
+              
+              <div v-if="question.type === 'OPEN'" class="ml-6 mt-4">
+                <h3 class="text-lg font-medium text-gray-700 mb-2">Réponse correcte</h3>
+                <div class="space-y-2">
+                  <p class="text-sm text-gray-600">Entrez la réponse attendue pour cette question ouverte :</p>
+                  <input v-model="question.correctAnswer" placeholder="Réponse correcte" 
+                         class="input-field" />
+                </div>
+              </div>
             </div>
           </div>
           <button type="button" @click="addQuestion"
@@ -228,6 +237,7 @@ export default {
         difficulty: "EASY",
         time: 30,
         trueAnswer: true, // Default value for TRUE_FALSE questions
+        correctAnswer: "", // Default value for OPEN questions
         answers: [{answer: "", correct: false, image: null}],
       });
       selectedQuestion.value = newIndex;
@@ -261,7 +271,7 @@ export default {
         const response = await fetcher(`/quizz/get/${id}`);
         const quizData = await response.json();
 
-        // Process questions to set trueAnswer for TRUE_FALSE type
+        // Process questions to set trueAnswer for TRUE_FALSE type and correctAnswer for OPEN type
         const processedQuestions = quizData.questions.map(q => {
           if (q.type === 'TRUE_FALSE') {
             // Find the correct answer (should be either "True" or "False")
@@ -270,6 +280,10 @@ export default {
               (correctAnswer.answer === "True" ||
                 correctAnswer.answer === "true" ||
                 correctAnswer.answer === "TRUE");
+          } else if (q.type === 'OPEN') {
+            // For open questions, extract the correctAnswer from the answers
+            const correctAnswer = q.answers.find(a => a.correct);
+            q.correctAnswer = correctAnswer ? correctAnswer.answer : "";
           }
           return q;
         });
@@ -328,8 +342,9 @@ export default {
               };
             });
           } else {
-            // For OPEN questions, create a placeholder answer (if needed)
-            questionData.answers = [{answer: "", correct: true}];
+            // For OPEN questions, use the correctAnswer provided
+            const correctAnswer = question.correctAnswer || "";
+            questionData.answers = [{answer: correctAnswer, correct: true}];
           }
 
           formData.append(`questions`, JSON.stringify(questionData));
