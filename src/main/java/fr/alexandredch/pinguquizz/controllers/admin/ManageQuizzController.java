@@ -71,7 +71,9 @@ public class ManageQuizzController {
             quizz.setImage(imageName);
             quizz.setOriginalImageName(image.getOriginalFilename());
         }
-
+        if (questionsJson == null) {
+            return ResponseEntity.badRequest().body("Questions are required");
+        }
         List<Question> questions = parseQuestionsJson(questionsJson, allRequestParams);
         quizz.setQuestions(questions);
 

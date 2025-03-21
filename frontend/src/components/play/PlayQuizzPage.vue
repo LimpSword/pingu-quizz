@@ -148,7 +148,7 @@ export default {
     };
 
     const setupWebSocket = () => {
-      const socket = new SockJS("http://localhost:8080/api/quiz");
+      const socket = new SockJS(apiUrls.websocket);
       stompClient = new Client({
         webSocketFactory: () => socket,
         reconnectDelay: 5000,

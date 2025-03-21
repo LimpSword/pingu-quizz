@@ -291,7 +291,7 @@
 <script>
 import {ref, onMounted, watch, onUnmounted, computed} from 'vue';
 import {Chart, registerables} from 'chart.js';
-import {fetcher} from "@/api/api.js";
+import {apiUrls, fetcher} from "@/api/api.js";
 import router from "@/router/index.js";
 import {Client} from "@stomp/stompjs";
 
@@ -361,7 +361,7 @@ export default {
     });
 
     const setupWebSocket = () => {
-      const socket = new SockJS("http://localhost:8080/api/quiz");
+      const socket = new SockJS(apiUrls.websocket);
       stompClient = new Client({
         webSocketFactory: () => socket,
         reconnectDelay: 5000,

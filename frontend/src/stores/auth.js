@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import {apiUrls} from "@/api/api.js";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -8,7 +9,7 @@ export const useAuthStore = defineStore("auth", {
   actions: {
     async login(username, password) {
       try {
-        const response = await fetch("http://localhost:8080/api/auth/login", {
+        const response = await fetch(apiUrls.auth, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password }),

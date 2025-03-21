@@ -1,9 +1,11 @@
 import {useAuthStore} from "@/stores/auth.js";
 
-const apiUrl = 'http://localhost:8080/api';
+const apiUrl = 'https://pingu.limpou.fr/api/api';
 
 export const apiUrls = {
-  download: `${apiUrl}/storage/files`
+  download: `${apiUrl}/storage/files`,
+  auth: `${apiUrl}/auth/login`,
+  websocket: `${apiUrl}/quiz`,
 }
 
 export const fetcher = async (url, options = {}) => {
