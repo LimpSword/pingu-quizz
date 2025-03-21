@@ -294,10 +294,10 @@ export default {
           formData.append("image", quiz.value.image);
         }
 
-        quiz.value.questions.forEach((question) => {
+        quiz.value.questions.forEach((question, qIndex) => {
           // append all images to a specific form data key
           if (question.image) {
-            formData.append(`question_images`, question.image);
+            formData.append(`question_images_${qIndex}`, question.image);
           }
 
           let questionData = {
@@ -305,7 +305,8 @@ export default {
             type: question.type,
             points: question.points,
             difficulty: question.difficulty,
-            time: question.time
+            time: question.time,
+            answers: []
           };
 
           // Handle different question types
@@ -317,25 +318,21 @@ export default {
             ];
           } else if (question.type === 'MULTIPLE_CHOICE') {
             // For MULTIPLE_CHOICE, use the existing answers
-            questionData.answers = question.answers.map((answer) => ({
-              answer: answer.answer,
-              correct: answer.correct,
-            }));
+            questionData.answers = question.answers.map((answer, aIndex) => {
+              if (answer.image) {
+                formData.append(`answer_images_${qIndex}_${aIndex}`, answer.image);
+              }
+              return {
+                answer: answer.answer,
+                correct: answer.correct,
+              };
+            });
           } else {
             // For OPEN questions, create a placeholder answer (if needed)
             questionData.answers = [{answer: "", correct: true}];
           }
 
           formData.append(`questions`, JSON.stringify(questionData));
-
-          // Only add answer images for MULTIPLE_CHOICE
-          if (question.type === 'MULTIPLE_CHOICE') {
-            question.answers.forEach((answer) => {
-              if (answer.image) {
-                formData.append(`answer_images`, answer.image);
-              }
-            });
-          }
         });
 
         const endpoint = isEditing.value

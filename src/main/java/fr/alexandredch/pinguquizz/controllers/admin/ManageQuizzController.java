@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/quizz")
@@ -55,9 +56,8 @@ public class ManageQuizzController {
             @RequestParam("name") String name,
             @RequestParam("description") String description,
             @RequestParam(value = "image", required = false) MultipartFile image,
-            @RequestParam(value = "question_images", required = false) List<MultipartFile> questionImages,
-            @RequestParam(value = "answer_images", required = false) List<MultipartFile> answerImages,
-            @RequestParam(value = "questions", required = false) String questionsJson) {
+            @RequestParam(value = "questions", required = false) String questionsJson,
+            @RequestParam Map<String, MultipartFile> allRequestParams) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
 
@@ -72,12 +72,45 @@ public class ManageQuizzController {
             quizz.setOriginalImageName(image.getOriginalFilename());
         }
 
-        List<Question> questions = parseQuestionsJson(questionsJson);
+        List<Question> questions = parseQuestionsJson(questionsJson, allRequestParams);
         quizz.setQuestions(questions);
 
         quizzRepository.save(quizz);
 
         return ResponseEntity.ok("Quiz created successfully");
+    }
+
+    private List<Question> parseQuestionsJson(String questionsJson, Map<String, MultipartFile> allRequestParams) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        // The returned JSON is a list of Question separated by commas, without the surrounding brackets
+        questionsJson = '[' + questionsJson + ']';
+
+        List<Question> questions = new ArrayList<>();
+        try {
+            questions = objectMapper.readValue(questionsJson, objectMapper.getTypeFactory().constructCollectionType(List.class, Question.class));
+        } catch (Exception _) {
+        }
+
+        for (int qIndex = 0; qIndex < questions.size(); qIndex++) {
+            Question question = questions.get(qIndex);
+            MultipartFile questionImage = allRequestParams.get("question_images_" + qIndex);
+            if (questionImage != null && !questionImage.isEmpty()) {
+                String imageName = storageService.store(questionImage);
+                question.setImage(imageName);
+            }
+
+            for (int aIndex = 0; aIndex < question.getAnswers().size(); aIndex++) {
+                Answer answer = question.getAnswers().get(aIndex);
+                MultipartFile answerImage = allRequestParams.get("answer_images_" + qIndex + "_" + aIndex);
+                if (answerImage != null && !answerImage.isEmpty()) {
+                    String imageName = storageService.store(answerImage);
+                    answer.setImage(imageName);
+                }
+            }
+        }
+
+        return questions;
     }
 
     @DeleteMapping("/edit/{id}")

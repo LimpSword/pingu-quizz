@@ -9,7 +9,7 @@
 
       <h2 class="text-3xl font-bold text-gray-800 mb-6">{{ currentQuestion.question }}</h2>
 
-      <img v-if="currentQuestion.image" :src="currentQuestion.image" alt="Question Image"
+      <img v-if="currentQuestion.image" :src="`${imageUrl}/${currentQuestion.image}`" alt="Question Image"
            class="mx-auto mb-6 rounded-lg shadow-md" style="max-height: 200px;"/>
 
       <div v-if="currentQuestion.type === 'MULTIPLE_CHOICE'" class="space-y-4">
@@ -22,7 +22,7 @@
                   'w-full bg-green-300 text-gray-800 py-2 px-4 rounded-md cursor-not-allowed': responded && submittedAnswer === answer.answer
                 }">
           {{ answer.answer }}
-          <img v-if="answer.image" :src="answer.image" class="mx-auto mt-2 rounded-lg shadow-md"
+          <img v-if="answer.image" :src="`${imageUrl}/${answer.image}`" class="mx-auto mt-2 rounded-lg shadow-md"
                style="max-height: 100px;"/>
         </button>
       </div>

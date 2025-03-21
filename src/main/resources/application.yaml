@@ -14,7 +14,7 @@ spring:
       hibernate:
         # Because keywords like "user" are reserved in H2
         globally_quoted_identifiers: true
-    show-sql: true
+    show-sql: false
   servlet:
     multipart:
       max-file-size: 5MB
