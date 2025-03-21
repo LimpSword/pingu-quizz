@@ -148,3 +148,7 @@ gradle-app.setting
 data
 # Ignore uploaded files
 upload-dir
+
+.env
+.env.*
+!.env.example

@@ -148,27 +148,27 @@
             <div v-for="(question, index) in finalResults.questionDetails" :key="index"
                  class="bg-white p-4 rounded-lg shadow">
               <h4 class="text-lg font-medium text-gray-800">
-                Question {{ index + 1 }}: {{ question.text }}
+                Question {{ index + 1 }} : {{ question.text }}
               </h4>
 
               <div class="mt-2 text-sm">
                 <p class="text-gray-600">
-                  <span class="font-medium">Type:</span>
+                  <span class="font-medium">Type :</span>
                   {{ question.type === 'MULTIPLE_CHOICE' ? 'Choix multiple' :
                   question.type === 'TRUE_FALSE' ? 'Vrai/Faux' : 'Ouverte' }}
                 </p>
 
                 <p class="text-gray-600">
-                  <span class="font-medium">Taux de réussite:</span>
+                  <span class="font-medium">Taux de réussite :</span>
                   {{ Math.round(finalResults.questionDifficulty[index]) }}%
                 </p>
 
                 <div v-if="question.answerDistribution" class="mt-2">
-                  <p class="font-medium text-gray-700">Distribution des réponses:</p>
+                  <p class="font-medium text-gray-700">Distribution des réponses :</p>
                   <div class="ml-4 mt-1 space-y-1">
                     <div v-for="(count, answer) in question.answerDistribution" :key="answer"
                          class="flex items-center">
-                      <span class="text-gray-800 mr-2">{{ formatAnswer(answer) }}:</span>
+                      <span class="text-gray-800 mr-2">{{ formatAnswer(answer) }} :</span>
                       <span class="text-gray-600">{{ count }} réponses</span>
                       <span v-if="question.correctAnswers &&
                           question.correctAnswers.includes(formatAnswer(answer))"

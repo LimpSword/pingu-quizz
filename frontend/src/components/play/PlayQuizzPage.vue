@@ -9,7 +9,8 @@
 
       <h2 class="text-3xl font-bold text-gray-800 mb-6">{{ currentQuestion.question }}</h2>
 
-      <img v-if="currentQuestion.image" :src="`${imageUrl}/${currentQuestion.image}`" alt="Question Image"
+      <img v-if="currentQuestion.image" :src="`${imageUrl}/${currentQuestion.image}`"
+           alt="Question Image"
            class="mx-auto mb-6 rounded-lg shadow-md" style="max-height: 200px;"/>
 
       <div v-if="currentQuestion.type === 'MULTIPLE_CHOICE'" class="space-y-4">
@@ -22,7 +23,8 @@
                   'w-full bg-green-300 text-gray-800 py-2 px-4 rounded-md cursor-not-allowed': responded && submittedAnswer === answer.answer
                 }">
           {{ answer.answer }}
-          <img v-if="answer.image" :src="`${imageUrl}/${answer.image}`" class="mx-auto mt-2 rounded-lg shadow-md"
+          <img v-if="answer.image" :src="`${imageUrl}/${answer.image}`"
+               class="mx-auto mt-2 rounded-lg shadow-md"
                style="max-height: 100px;"/>
         </button>
       </div>
@@ -59,6 +61,17 @@
         </button>
       </div>
 
+      <div class="flex justify-between mt-4">
+        <p class="text-gray-600 font-bold">
+          Difficulté : <span :class="{
+            'text-green-600': currentQuestion.difficulty === 'EASY',
+            'text-yellow-600': currentQuestion.difficulty === 'MEDIUM',
+            'text-red-600': currentQuestion.difficulty === 'HARD'
+          }">{{ currentQuestion.difficulty }}</span>
+        </p>
+        <p class="text-gray-600">Points : {{ currentQuestion.points }}</p>
+      </div>
+
       <div v-if="showResult" class="mt-6">
         <p class="text-2xl font-bold" :class="resultClass">{{ resultMessage }}</p>
       </div>
@@ -79,11 +92,11 @@
 
     <div v-if="!currentQuestion && started" class="text-center">
       <h2 class="text-4xl font-bold text-white mb-4">Quiz Terminé!</h2>
-      <p class="text-xl text-white mb-6">Votre score: {{ score }}</p>
+      <p class="text-xl text-white mb-6">Votre score : {{ score }}</p>
     </div>
 
     <div class="fixed top-4 right-4 bg-white p-4 rounded-lg shadow-lg">
-      <p class="text-xl font-bold">Score: {{ score }}</p>
+      <p class="text-xl font-bold">Score : {{ score }}</p>
     </div>
   </div>
 </template>
@@ -269,7 +282,24 @@ export default {
       if (stompClient) stompClient.deactivate();
     });
 
-    return {currentQuestion, timer, started, paused, score, dots, quiz, openAnswer, submitAnswer, showResult, resultMessage, resultClass, isCorrect, responded, submittedAnswer, imageUrl};
+    return {
+      currentQuestion,
+      timer,
+      started,
+      paused,
+      score,
+      dots,
+      quiz,
+      openAnswer,
+      submitAnswer,
+      showResult,
+      resultMessage,
+      resultClass,
+      isCorrect,
+      responded,
+      submittedAnswer,
+      imageUrl
+    };
   },
 };
 </script>

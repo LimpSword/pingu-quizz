@@ -1,6 +1,6 @@
 import {useAuthStore} from "@/stores/auth.js";
 
-const apiUrl = 'https://pingu.limpou.fr/api/api';
+const apiUrl = import.meta.env.VITE_API_URL;
 
 export const apiUrls = {
   download: `${apiUrl}/storage/files`,
