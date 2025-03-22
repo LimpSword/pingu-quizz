@@ -1,7 +1,7 @@
 <template>
   <div class="question-card p-6 bg-white rounded-lg shadow-lg">
     <p class="text-lg font-semibold text-gray-800">{{ question.question }}</p>
-    <img v-if="question.image" :src="question.image" class="w-full h-auto rounded mt-4"/>
+    <img v-if="questionImageUrl" :src="questionImageUrl" class="w-full h-auto rounded mt-4"/>
 
     <!-- Open-ended question -->
     <div v-if="question.type === 'OPEN'" class="mt-4">
@@ -21,14 +21,16 @@
         <input type="checkbox" v-model="selectedAnswers" :value="answer"
                class="form-checkbox h-5 w-5 text-blue-600"/>
         <span>{{ answer.answer }}</span>
-        <img v-if="answer.image" :src="answer.image" class="w-12 h-12 rounded ml-2"/>
+        <img v-if="getAnswerImageUrl(answer)" :src="getAnswerImageUrl(answer)"
+             class="w-12 h-12 rounded ml-2"/>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import {ref} from "vue";
+import {ref, computed, onMounted, onBeforeUnmount, watch} from "vue";
+import {apiUrls} from "@/api/api.js";
 
 export default {
   props: {
@@ -38,6 +40,35 @@ export default {
     const userAnswer = ref("");
     const selectedAnswers = ref([]);
     const selectedTrueFalse = ref(null);
+    const objectUrls = ref([]);
+
+    // Compute URL for question image, handling both strings and File objects
+    const questionImageUrl = computed(() => {
+      if (!props.question.image) return null;
+
+      if (typeof props.question.image === 'string') {
+        return apiUrls.download + "/" + props.question.image;
+      } else if (props.question.image instanceof File) {
+        const url = URL.createObjectURL(props.question.image);
+        objectUrls.value.push(url);
+        return url;
+      }
+      return null;
+    });
+
+    // Function to get image URL for answers
+    const getAnswerImageUrl = (answer) => {
+      if (!answer.image) return null;
+
+      if (typeof answer.image === 'string') {
+        return apiUrls.download + "/" + answer.image;
+      } else if (answer.image instanceof File) {
+        const url = URL.createObjectURL(answer.image);
+        objectUrls.value.push(url);
+        return url;
+      }
+      return null;
+    };
 
     const selectAnswer = (value) => {
       selectedTrueFalse.value = value;
@@ -47,12 +78,19 @@ export default {
       return selectedTrueFalse.value === value ? 'bg-blue-500 text-white px-4 py-2 rounded' : 'bg-gray-200 px-4 py-2 rounded';
     };
 
+    // Clean up object URLs to prevent memory leaks
+    onBeforeUnmount(() => {
+      objectUrls.value.forEach(url => URL.revokeObjectURL(url));
+    });
+
     return {
       userAnswer,
       selectedAnswers,
       selectedTrueFalse,
       selectAnswer,
       getButtonClass,
+      questionImageUrl,
+      getAnswerImageUrl
     };
   },
 };
